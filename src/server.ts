@@ -7,7 +7,7 @@ import { connectDB, disconnectDB, healthCheck } from "./app/config/database.js";
 async function startServer() {
   await connectDB();
 
-  app.get("/health", async (req, res) => {
+  app.get("/health", async (_req, res) => {
     const dbAlive = await healthCheck();
     res.status(dbAlive ? 200 : 503).json({
       status: dbAlive ? "healthy" : "unhealthy",
