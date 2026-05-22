@@ -8,10 +8,11 @@ const config = {
   jwtSecret: process.env.JWT_SECRET || "",
   jwtExpiry: process.env.JWT_EXPIRY || "7d",
   corsOrigin: process.env.CORS_ORIGIN || "*",
+  DB_NAME: process.env.DB_NAME || "cashflow"
 };
 
 // Validate required variables
-const required = ["dbUrl", "jwtSecret"] as const;
+const required = ["dbUrl", "jwtSecret", "DB_NAME"] as const;
 
 for (const key of required) {
   if (!config[key]) {
