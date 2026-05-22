@@ -1,5 +1,6 @@
 import app from "./app/app.js";
+import config from "./app/config/env.config.js";
 
-app.listen(3000, () => {
-  console.log("Server is running on port 3000");
+app.listen(config.port, ():void => {
+  console.log(`Server is running on http://localhost:${config.port}`);
 });
