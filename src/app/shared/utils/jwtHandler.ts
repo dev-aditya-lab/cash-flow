@@ -1,10 +1,10 @@
 import jwt from "jsonwebtoken";
 import config from "../../config/env.config.js";
 
-export const generateToken = (tokenData: object) => {
+export const generateToken = (tokenData: object, expiry?: string) => {
 	try {
 		const token = jwt.sign(tokenData, config.jwtSecret, {
-			expiresIn: config.jwtExpiry,
+			expiresIn: expiry || config.jwtExpiry,
 		} as jwt.SignOptions);
 		return token;
 	} catch (error) {

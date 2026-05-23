@@ -8,11 +8,14 @@ const config = {
   jwtSecret: process.env.JWT_SECRET || "",
   jwtExpiry: process.env.JWT_EXPIRY || "7d",
   corsOrigin: process.env.CORS_ORIGIN || "*",
-  DB_NAME: process.env.DB_NAME || "cashflow"
+  DB_NAME: process.env.DB_NAME || "cashflow",
+  resendApiKey: process.env.RESEND_API_KEY || "",
+  defaultEmail: process.env.DEFAULT_EMAIL || "cashflow@devaditya.dev",
+  frontendUrl: process.env.FRONTEND_URL || "https://cashflow.devaditya.dev",
 };
 
 // Validate required variables
-const required = ["dbUrl", "jwtSecret", "DB_NAME"] as const;
+const required = ["dbUrl", "jwtSecret", "DB_NAME", "resendApiKey", "defaultEmail"] as const;
 
 for (const key of required) {
   if (!config[key]) {

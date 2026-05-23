@@ -6,9 +6,11 @@ export interface IAuth extends Document {
 	email: string;
 	password: string;
 	name: string;
+	emailVerified: boolean;
 	role: "user" | "admin";
 	createdAt: Date;
 	updatedAt: Date;
+	comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
 const authSchema = new Schema<IAuth>(
@@ -34,6 +36,10 @@ const authSchema = new Schema<IAuth>(
 			type: String,
 			enum: ["user", "admin"],
 			default: "user",
+		},
+		emailVerified: {
+			type: Boolean,
+			default: false,
 		},
 	},
 	{ timestamps: true },
