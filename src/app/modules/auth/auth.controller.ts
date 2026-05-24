@@ -12,6 +12,7 @@ import { OTP_EMAIL_TEMPLATE } from "../../shared/services/mail/emailTemplate/otp
 import { generateEmailVerificationURL } from "../../shared/utils/genreateEmailVerifyURL.js";
 import config from "../../config/env.config.js";
 import { saveOtp, verifyOtp } from "../../shared/utils/otpHandlers.js";
+import { LOGIN_ALERT_EMAIL_TEMPLATE } from "../../shared/services/mail/emailTemplate/login-alert.emailTemplate.js";
 
 interface ExtendedRequest extends Request {
 	timestamp: string;
@@ -49,8 +50,8 @@ export const registerUserController: RequestHandler = async (
 						otp,
 						extendedReq.timestamp,
 						extendedReq.ip ?? "",
-						extendedReq.deviceInfo,
-						extendedReq.location,
+						extendedReq.headers["user-agent"] ?? "",
+						extendedReq.location ?? "Unknown Location",
 						verificationLink,
 					),
 				);
@@ -193,6 +194,7 @@ export const loginUserController = async (
 	req: Request,
 	res: Response,
 ): Promise<void> => {
+	const extendedReq = req as ExtendedRequest;
 	try {
 		const { email, password } = req.body as {
 			email: string;
@@ -219,8 +221,32 @@ export const loginUserController = async (
 		const isMatch = await user.comparePassword(password);
 		if (!isMatch) {
 			sendError(res, 400, "Invalid email or password", null);
+			sendMail(
+				authEmail,
+				user.email,
+				"Failed Login Attempt Alert",
+				LOGIN_ALERT_EMAIL_TEMPLATE(
+					new Date().toLocaleString(),
+					req.ip ?? "",
+					req.headers["user-agent"] ?? "",
+					extendedReq.location ?? "Unknown Location",
+					"Failed login attempt detected for your account. If this was not you, please secure your account immediately.",
+				)
+			);
 			return;
 		}
+		sendMail(
+			authEmail,
+			user.email,
+			"Successful Login Alert",
+			LOGIN_ALERT_EMAIL_TEMPLATE(
+				new Date().toLocaleString(),
+				req.ip ?? "",
+				req.headers["user-agent"] ?? "",
+				extendedReq.location ?? "Unknown Location",
+				"Your account was just accessed successfully. If this was not you, please secure your account immediately.",
+			)
+		);
 		const token = generateToken({
 			userId: user._id,
 			role: user.role,
