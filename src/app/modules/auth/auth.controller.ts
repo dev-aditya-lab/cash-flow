@@ -11,7 +11,7 @@ import { authEmail } from "../../core/constent/constent.js";
 import { OTP_EMAIL_TEMPLATE } from "../../shared/services/mail/emailTemplate/otp.emailTemplate.js";
 import { generateEmailVerificationURL } from "../../shared/utils/genreateEmailVerifyURL.js";
 import config from "../../config/env.config.js";
-import { saveOtp } from "../../shared/utils/otpHandlers.js";
+import { saveOtp, verifyOtp } from "../../shared/utils/otpHandlers.js";
 
 interface ExtendedRequest extends Request {
 	timestamp: string;
@@ -171,6 +171,18 @@ export const reSendVerificationEmailController: RequestHandler = async (
 			} else {
 				sendError(res, 400, "Failed to send verification email", null);
 			}
+		}
+	} catch (error) {
+		sendError(res, 500, "Internal server error", null);
+	}
+};
+
+export const verifyOtpController = async (req: Request, res: Response): Promise<void> => {
+	try {
+		const { email, otp } = req.body as { email: string; otp: string };
+		const isVerified = await verifyOtp(res, email, otp);
+		if (isVerified) {
+			sendRes(res, 200, "OTP verified successfully", null);
 		}
 	} catch (error) {
 		sendError(res, 500, "Internal server error", null);

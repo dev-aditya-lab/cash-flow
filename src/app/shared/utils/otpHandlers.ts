@@ -2,7 +2,6 @@ import redisClient from "../../config/redis.config.js";
 import type { Response } from "express";
 import sendError from "../../core/response/error.response.js";
 import { otpMaxAllowedAttempts } from "../../core/constent/constent.js";
-import sendRes from "../../core/response/sucess.response.js";
 
 
 
@@ -56,7 +55,6 @@ export async function verifyOtp(res: Response, email: string, userOtp: string): 
     // Check if the OTP matches
     if (storedData.otp === userOtp) {
         // Success: Delete the key so it cannot be reused
-        sendRes(res, 200, 'OTP verified successfully', null);
         await redisClient.del(key);
         return true;
     }
