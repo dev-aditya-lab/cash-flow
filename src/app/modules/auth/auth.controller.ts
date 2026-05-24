@@ -1,6 +1,6 @@
 import sendRes from "../../core/response/sucess.response.js";
 import AuthModel from "./auth.schema.js";
-import type { Request, Response } from "express";
+import type { Request, RequestHandler, Response } from "express";
 import type { RegisterUserRequest } from "./auth.types.js";
 import sendError from "../../core/response/error.response.js";
 import { generateToken, verifyToken } from "../../shared/utils/jwtHandler.js";
@@ -18,11 +18,12 @@ interface ExtendedRequest extends Request {
 	location: string;
 }
 
-export const registerUserController = async (
-	req: ExtendedRequest,
-	res: Response,
+export const registerUserController: RequestHandler = async (
+	req,
+	res,
 ): Promise<void> => {
 	try {
+		const extendedReq = req as ExtendedRequest;
 		const { name, email, password } = req.body as RegisterUserRequest;
 		const isUserExist = await AuthModel.findOne({ email });
 		if (isUserExist) {
@@ -44,10 +45,10 @@ export const registerUserController = async (
 				"Welcome to CashFlow! Your OTP Code",
 				OTP_EMAIL_TEMPLATE(
 					otp,
-					req.timestamp,
-					req.ip ?? "",
-					req.deviceInfo,
-					req.location,
+					extendedReq.timestamp,
+					extendedReq.ip ?? "",
+					extendedReq.deviceInfo,
+					extendedReq.location,
 					verificationLink,
 				),
 			);
@@ -92,11 +93,12 @@ export const verifyEmailController = async (
 	}
 };
 
-export const reSendVerificationEmailController = async (
-	req: ExtendedRequest,
-	res: Response,
+export const reSendVerificationEmailController: RequestHandler = async (
+	req,
+	res,
 ): Promise<void> => {
 	try {
+		const extendedReq = req as ExtendedRequest;
 		const { email } = req.body as RegisterUserRequest;
 		const isUserExist = await AuthModel.findOne({ email });
 		if (!isUserExist) {
@@ -125,10 +127,10 @@ export const reSendVerificationEmailController = async (
 				"Welcome back to CashFlow! Your OTP Code",
 				OTP_EMAIL_TEMPLATE(
 					otp,
-					req.timestamp,
-					req.ip ?? "",
-					req.deviceInfo,
-					req.location,
+					extendedReq.timestamp,
+					extendedReq.ip ?? "",
+					extendedReq.deviceInfo,
+					extendedReq.location,
 					verificationLink,
 				),
 			);
