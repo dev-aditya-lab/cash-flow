@@ -234,6 +234,8 @@ export const loginUserController = async (
 	}
 };
 
+export const resetPasswordController = async (req: Request, res: Response): Promise<void> => {}
+
 export const logoutUserController = (_req: Request, res: Response): void => {
 	try {
 		clearCookie(res);
