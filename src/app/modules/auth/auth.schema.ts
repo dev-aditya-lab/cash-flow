@@ -7,6 +7,7 @@ export interface IAuth extends Document {
 	password: string;
 	name: string;
 	emailVerified: boolean;
+	isBanned: boolean;
 	role: "user" | "admin";
 	createdAt: Date;
 	updatedAt: Date;
@@ -38,6 +39,10 @@ const authSchema = new Schema<IAuth>(
 			default: "user",
 		},
 		emailVerified: {
+			type: Boolean,
+			default: false,
+		},
+		isBanned: {
 			type: Boolean,
 			default: false,
 		},
