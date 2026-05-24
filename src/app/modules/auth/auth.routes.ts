@@ -1,5 +1,5 @@
 import { Router } from "express";
-import {  loginUserController, logoutUserController, registerUserController, reSendVerificationEmailController, verifyEmailController } from "./auth.controller.js";
+import {  loginUserController, logoutUserController, registerUserController, reSendVerificationEmailController, verifyEmailController, verifyOtpController } from "./auth.controller.js";
 const authRouter = Router();
 
 /** 
@@ -28,6 +28,15 @@ authRouter.get("/verify-email", verifyEmailController);
  * @response { success: boolean, message: string }
  */
 authRouter.post("/resend-verification-email", reSendVerificationEmailController);
+
+/** 
+ * @route POST api/auth/verify-otp
+ * @desc Verify user's OTP
+ * @access Public
+ * @body { email: string, otp: string }
+ * @response { success: boolean, message: string }
+ */
+authRouter.post("/verify-otp", verifyOtpController);
 
 /** 
  * @route POST api/auth/login
