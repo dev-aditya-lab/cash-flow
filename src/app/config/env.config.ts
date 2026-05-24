@@ -12,10 +12,11 @@ const config = {
   resendApiKey: process.env.RESEND_API_KEY || "",
   defaultEmail: process.env.DEFAULT_EMAIL || "cashflow@devaditya.dev",
   frontendUrl: process.env.FRONTEND_URL || "https://cashflow.devaditya.dev",
+  redisUrl: process.env.REDIS_URL || "",
 };
 
 // Validate required variables
-const required = ["dbUrl", "jwtSecret", "DB_NAME", "resendApiKey", "defaultEmail"] as const;
+const required = ["dbUrl", "jwtSecret", "DB_NAME", "resendApiKey", "defaultEmail", "redisUrl"] as const;
 
 for (const key of required) {
   if (!config[key]) {
