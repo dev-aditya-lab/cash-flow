@@ -40,7 +40,7 @@ export async function verifyOtp(res: Response, email: string, userOtp: string): 
 
     // Check if OTP exists or expired
     if (!storedData || Object.keys(storedData).length === 0) {
-        sendError(res, 400, 'OTP has expired or does not exist. Please request a new one.', null);
+        sendError(res, 400, 'OTP has expired. Please request a new one.', null);
         return false;
     }
 
