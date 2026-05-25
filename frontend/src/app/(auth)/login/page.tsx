@@ -6,13 +6,15 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { motion } from "framer-motion";
-import { Eye, EyeOff, Mail, Lock } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, AlertCircle } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import type { AxiosError } from "axios";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/store/auth-context";
+import { authService } from "@/services/auth.service";
 import { staggerContainer, staggerItem } from "@/lib/animations";
 
 const schema = z.object({
@@ -22,23 +24,55 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>;
 
-export default function LoginPage() {
-  const [showPw, setShowPw] = useState(false);
-  const { login }  = useAuth();
-  const router     = useRouter();
+/** Pull the most useful message out of an unknown error */
+function extractMessage(err: unknown, fallback = "Something went wrong"): string {
+  if (!err) return fallback;
+  // AxiosError with backend response body
+  const axiosErr = err as AxiosError<{ message?: string }>;
+  if (axiosErr.response?.data?.message) return axiosErr.response.data.message;
+  // Standard Error (or AxiosError message already enriched by interceptor)
+  if (err instanceof Error && err.message) return err.message;
+  return fallback;
+}
 
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormValues>({
+export default function LoginPage() {
+  const [showPw, setShowPw]       = useState(false);
+  const [unverifiedEmail, setUnverifiedEmail] = useState("");
+  const [resending, setResending] = useState(false);
+  const { login } = useAuth();
+  const router    = useRouter();
+
+  const { register, handleSubmit, getValues, formState: { errors, isSubmitting } } = useForm<FormValues>({
     resolver: zodResolver(schema),
   });
 
   const onSubmit = async (values: FormValues) => {
     try {
       await login(values.email, values.password);
-      toast.success("Welcome back!");
+      toast.success("Welcome back! 👋");
       router.replace("/dashboard");
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Invalid email or password";
+      const message = extractMessage(err, "Login failed. Please try again.");
+
+      // If email is not verified, offer a one-click resend
+      if (message.toLowerCase().includes("not verified") || message.toLowerCase().includes("verify")) {
+        setUnverifiedEmail(values.email);
+      }
+
       toast.error(message);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    setResending(true);
+    try {
+      await authService.resendVerificationEmail(unverifiedEmail || getValues("email"));
+      toast.success("Verification email sent! Check your inbox.");
+      setUnverifiedEmail("");
+    } catch (err: unknown) {
+      toast.error(extractMessage(err, "Could not send email. Try again."));
+    } finally {
+      setResending(false);
     }
   };
 
@@ -54,6 +88,33 @@ export default function LoginPage() {
         <h1 className="text-2xl font-bold tracking-tight">Welcome back</h1>
         <p className="text-sm text-muted-foreground">Sign in to your CashFlow account</p>
       </motion.div>
+
+      {/* Email-not-verified banner */}
+      {unverifiedEmail && (
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-start gap-3 rounded-lg border border-warning/40 bg-warning-bg px-4 py-3"
+        >
+          <AlertCircle className="h-4 w-4 text-warning-foreground shrink-0 mt-0.5" />
+          <div className="flex-1 space-y-1">
+            <p className="text-sm font-medium text-warning-foreground">Email not verified</p>
+            <p className="text-xs text-warning-foreground/80">
+              Check your inbox for{" "}
+              <span className="font-medium">{unverifiedEmail}</span>{" "}
+              or resend the code.
+            </p>
+            <button
+              type="button"
+              onClick={handleResendVerification}
+              disabled={resending}
+              className="text-xs font-semibold text-warning-foreground underline underline-offset-2 disabled:opacity-50"
+            >
+              {resending ? "Sending…" : "Resend verification email"}
+            </button>
+          </div>
+        </motion.div>
+      )}
 
       {/* Form */}
       <motion.form variants={staggerItem} onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -72,7 +133,12 @@ export default function LoginPage() {
           placeholder="••••••••"
           leftIcon={<Lock className="h-4 w-4" />}
           rightIcon={
-            <button type="button" onClick={() => setShowPw(!showPw)} className="cursor-pointer">
+            <button
+              type="button"
+              onClick={() => setShowPw((p) => !p)}
+              className="cursor-pointer"
+              tabIndex={-1}
+            >
               {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           }
@@ -82,7 +148,10 @@ export default function LoginPage() {
         />
 
         <div className="flex justify-end">
-          <Link href="/forgot-password" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+          <Link
+            href="/forgot-password"
+            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
             Forgot password?
           </Link>
         </div>
@@ -102,7 +171,7 @@ export default function LoginPage() {
         </div>
       </motion.div>
 
-      {/* Social auth placeholder */}
+      {/* Social auth (placeholder) */}
       <motion.div variants={staggerItem} className="grid grid-cols-2 gap-3">
         <Button variant="outline" type="button" className="gap-2" onClick={() => toast.info("Coming soon")}>
           <svg viewBox="0 0 24 24" className="h-4 w-4">

@@ -9,8 +9,8 @@ import type {
 } from "@/types";
 
 export const authService = {
-  async register(payload: RegisterPayload): Promise<AuthResponse> {
-    const { data } = await api.post<AuthResponse>("/auth/register", payload);
+  async register(payload: RegisterPayload): Promise<ApiResponse> {
+    const { data } = await api.post<ApiResponse>("/auth/register", payload);
     return data;
   },
 
@@ -29,6 +29,11 @@ export const authService = {
     return data;
   },
 
+  /**
+   * Login — backend sets `cash_flow_token` cookie on success.
+   * Response body: { success, status, message, data: { data: User | null } }
+   * User is only returned in development mode.
+   */
   async login(payload: LoginPayload): Promise<AuthResponse> {
     const { data } = await api.post<AuthResponse>("/auth/login", payload);
     return data;

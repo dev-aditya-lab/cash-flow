@@ -3,15 +3,20 @@ export interface User {
   _id: string;
   name: string;
   email: string;
-  avatar?: string;
-  isVerified: boolean;
+  emailVerified: boolean;   // backend field name
+  isBanned: boolean;
+  role: "user" | "admin";
   createdAt: string;
+  updatedAt: string;
+  avatar?: string;          // future-proof / client-added
 }
 
 export interface AuthResponse {
   success: boolean;
+  status: number;
   message: string;
-  data?: { user?: User };
+  // login wraps user inside data.data (sendRes convention)
+  data?: { data?: User | null } | null;
 }
 
 export interface LoginPayload {
@@ -91,6 +96,7 @@ export interface Balance {
 // ── API Generic ───────────────────────────────────────────
 export interface ApiResponse<T = unknown> {
   success: boolean;
+  status: number;
   message: string;
   data?: T;
 }
@@ -103,8 +109,8 @@ export interface Transaction {
   type: TransactionType;
   amount: number;
   mode: PaymentMode;
-  party: string;          // "to" for expense, "from" for income
-  category: string;       // maps to resion / description
+  party: string;
+  category: string;
   description?: string;
   date: string;
 }

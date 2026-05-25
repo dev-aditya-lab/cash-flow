@@ -114,7 +114,7 @@ export default function ProfilePage() {
         <motion.div variants={staggerItem} className="text-center">
           <h1 className="text-xl font-bold">{user?.name}</h1>
           <p className="text-sm text-muted-foreground">{user?.email}</p>
-          {user?.isVerified && (
+          {user?.emailVerified && (
             <span className="inline-flex items-center gap-1 text-xs text-success mt-1">
               <CheckCircle2 className="h-3.5 w-3.5" /> Verified account
             </span>
