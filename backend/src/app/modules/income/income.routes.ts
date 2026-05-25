@@ -25,7 +25,7 @@ incomeRouter.get("/", GetUserMiddleware, getIncomes);
  * @body { amount?: number, mode?: string, from?: string, description?: string, date?: Date }
  * @returns { message: string, income: object }
  */
-incomeRouter.put("/edit/:id", GetUserMiddleware, updateIncome);
+incomeRouter.put("/edit/:incomeId", GetUserMiddleware, updateIncome);
 
 /**
  * @route DELETE /api/incomes/:id
@@ -33,6 +33,6 @@ incomeRouter.put("/edit/:id", GetUserMiddleware, updateIncome);
  * @param {string} id - The ID of the income to delete
  * @returns { message: string }
  */
-incomeRouter.delete("/delete/:id", GetUserMiddleware, deleteIncome);
+incomeRouter.delete("/delete/:incomeId", GetUserMiddleware, deleteIncome);
 
 export default incomeRouter;

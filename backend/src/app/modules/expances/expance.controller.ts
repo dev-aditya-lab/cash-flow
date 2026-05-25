@@ -129,7 +129,7 @@ export const updateExpance = async (req: Request, res: Response) => {
         const expance = await Expance.findOneAndUpdate(
             filter,
             { amount, mode, to, resion, description, date },
-            { new: true }
+            { returnDocument: "after" }
         );
         if (!expance) {
             sendError(res, 404, "Expance not found", null);

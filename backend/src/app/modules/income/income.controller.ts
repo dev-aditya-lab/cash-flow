@@ -107,7 +107,7 @@ export const updateIncome = async (req: Request, res: Response) => {
         const income = await Income.findOneAndUpdate(
             { _id: incomeId, userId },
             { amount, mode, from, description, date },
-            { new: true }
+            { returnDocument: "after" }
         );
         if (!income) {
             sendError(res, 404, "Income not found", null);

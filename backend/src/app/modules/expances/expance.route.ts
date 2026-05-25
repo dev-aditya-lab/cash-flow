@@ -27,15 +27,15 @@ expanceRouter.get("/", GetUserMiddleware, getExpances);
  * @param {string} id - The ID of the expance to delete
  * @returns { message: string, expance: object }
  */
-expanceRouter.delete("/delete/:id", GetUserMiddleware, deleteExpance);
+expanceRouter.delete("/delete/:expanceId", GetUserMiddleware, deleteExpance);
 
 /**
- * @route PUT /api/expance/edit/:id
+ * @route PUT /api/expance/edit/:expanceId
  * @desc Update an expance for the authenticated user
  * @access Private
  * @body { amount?: number, mode?: string, to?: string, resion?: string, description?: string, date?: Date }
  * @returns { message: string, expance: object }
  */
-expanceRouter.put("/edit/:id", GetUserMiddleware, updateExpance);
+expanceRouter.put("/edit/:expanceId", GetUserMiddleware, updateExpance);
 
 export default expanceRouter;
