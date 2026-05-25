@@ -125,10 +125,15 @@ export const updateExpance = async (req: Request, res: Response) => {
             sendError(res, 400, "Invalid user id", null);
             return;
         }
+        // Only update date when the client actually sent a non-empty value.
+        // An empty string would coerce to Unix epoch (Jan 1 1970) in Mongoose.
+        const updatePayload: Record<string, unknown> = { amount, mode, to, resion, description };
+        if (date) updatePayload.date = new Date(date);
+
         const filter = { _id: new Types.ObjectId(id), userId: new Types.ObjectId(userId) };
         const expance = await Expance.findOneAndUpdate(
             filter,
-            { amount, mode, to, resion, description, date },
+            updatePayload,
             { returnDocument: "after" }
         );
         if (!expance) {

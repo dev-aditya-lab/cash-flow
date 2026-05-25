@@ -104,9 +104,15 @@ export const updateIncome = async (req: Request, res: Response) => {
         }
         const { incomeId } = req.params;
         const { amount, mode, from, description, date } = req.body;
+
+        // Only update date when the client actually sent a non-empty value.
+        // An empty string would coerce to Unix epoch (Jan 1 1970) in Mongoose.
+        const updatePayload: Record<string, unknown> = { amount, mode, from, description };
+        if (date) updatePayload.date = new Date(date);
+
         const income = await Income.findOneAndUpdate(
             { _id: incomeId, userId },
-            { amount, mode, from, description, date },
+            updatePayload,
             { returnDocument: "after" }
         );
         if (!income) {
