@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   LayoutDashboard, ArrowUpDown, BarChart3, User, Settings,
-  Wallet, LogOut, TrendingUp, TrendingDown, Calculator,
+  Wallet, LogOut, Calculator,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/store/auth-context";
@@ -17,8 +17,6 @@ import { useRouter } from "next/navigation";
 const NAV_ITEMS = [
   { href: "/dashboard",     label: "Dashboard",    icon: LayoutDashboard },
   { href: "/transactions",  label: "Transactions", icon: ArrowUpDown },
-  { href: "/income",        label: "Income",       icon: TrendingUp },
-  { href: "/expenses",      label: "Expenses",     icon: TrendingDown },
   { href: "/analytics",     label: "Analytics",    icon: BarChart3 },
   { href: "/calculator",    label: "Calculator",   icon: Calculator },
   { href: "/profile",       label: "Profile",      icon: User },
