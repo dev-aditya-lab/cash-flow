@@ -5,7 +5,9 @@
       "PowerShell(Set-Location \"c:\\\\Users\\\\ad112\\\\aadiWorkspace\\\\Coding\\\\my Projects\\\\cashFlow\\\\frontend\"; npx tsc --noEmit 2>&1 | Where-Object { $_ -match \"error TS\" } | Select-Object -First 30)",
       "PowerShell(Set-Location \"c:\\\\Users\\\\ad112\\\\aadiWorkspace\\\\Coding\\\\my Projects\\\\cashFlow\\\\frontend\"; npx tsc --noEmit 2>&1 | Where-Object { $_ -match \"error TS\" } | Select-Object -First 20)",
       "PowerShell(Set-Location \"c:\\\\Users\\\\ad112\\\\aadiWorkspace\\\\Coding\\\\my Projects\\\\cashFlow\\\\frontend\"; npx tsc --noEmit 2>&1 | Where-Object { $_ -match \"error TS\" })",
-      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8000/)"
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8000/)",
+      "Bash(New-Item -ItemType Directory -Force \"c:\\\\Users\\\\ad112\\\\aadiWorkspace\\\\Coding\\\\my Projects\\\\cashFlow\\\\frontend\\\\src\\\\app\\\\\\(app\\)\\\\calculator\")",
+      "Bash(Out-Null)"
     ]
   }
 }

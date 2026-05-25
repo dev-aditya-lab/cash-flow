@@ -4,16 +4,16 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  LayoutDashboard, ArrowUpDown, BarChart3, User, TrendingUp,
+  LayoutDashboard, ArrowUpDown, BarChart3, User, Calculator,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
-  { href: "/dashboard",    label: "Home",    icon: LayoutDashboard },
-  { href: "/transactions", label: "History", icon: ArrowUpDown },
-  { href: "/income",       label: "Income",  icon: TrendingUp },
-  { href: "/analytics",    label: "Charts",  icon: BarChart3 },
-  { href: "/profile",      label: "Profile", icon: User },
+  { href: "/dashboard",    label: "Home",   icon: LayoutDashboard },
+  { href: "/transactions", label: "History",icon: ArrowUpDown },
+  { href: "/calculator",   label: "Calc",   icon: Calculator },
+  { href: "/analytics",    label: "Charts", icon: BarChart3 },
+  { href: "/profile",      label: "Profile",icon: User },
 ];
 
 export function BottomNav() {
