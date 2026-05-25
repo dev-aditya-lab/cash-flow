@@ -14,13 +14,15 @@ export const getBalance = async (req: Request, res: Response) => {
             sendError(res, 401, "Unauthorized", null);
             return;
         }
-        // Fetch balance for the user from the database 
+        // Fetch balance for the user from the database.
+        // NOTE: Expance.userId is stored as ObjectId; Income.userId is stored as String.
+        // Match each collection using its actual stored type to avoid silent zero-results.
         const totalExpances = await Expance.aggregate([
             { $match: { userId: new Types.ObjectId(userId) } },
             { $group: { _id: null, total: { $sum: "$amount" } } }
         ]);
         const totalIncome = await Income.aggregate([
-            { $match: { userId: new Types.ObjectId(userId) } },
+            { $match: { userId: userId.toString() } },
             { $group: { _id: null, total: { $sum: "$amount" } } }
         ]);
         const balance = (totalIncome[0]?.total || 0) - (totalExpances[0]?.total || 0);
