@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 
 export interface IExpance extends mongoose.Document {
+    _id: mongoose.Types.ObjectId;
     userId: mongoose.Types.ObjectId;
     amount: number;
     mode: "cash" | "card" | "UPI" | "bank_transfer" | "other";

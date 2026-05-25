@@ -20,6 +20,12 @@ interface ExtendedRequest extends Request {
 	location: string;
 }
 
+/** 
+ * @controller registerUserController
+ * @description Register a new user and send OTP for email verification
+ * @body { name: string, email: string, password: string }
+ * @returns { message: string, user: object }
+ */
 export const registerUserController: RequestHandler = async (
 	req,
 	res,
@@ -88,6 +94,12 @@ export const registerUserController: RequestHandler = async (
 	}
 };
 
+/**
+ * @controller verifyEmailController
+ * @description Verify user's email using the token sent in the verification email
+ * @query { token: string }
+ * @returns { message: string, decoded: object }
+ */
 export const verifyEmailController = async (
 	req: Request,
 	res: Response,
@@ -109,6 +121,12 @@ export const verifyEmailController = async (
 	}
 };
 
+/**
+ * @controller reSendVerificationEmailController
+ * @description Resend the email verification OTP to the user's email
+ * @body { email: string }
+ * @returns { message: string }
+ */
 export const reSendVerificationEmailController: RequestHandler = async (
 	req,
 	res,
@@ -178,6 +196,12 @@ export const reSendVerificationEmailController: RequestHandler = async (
 	}
 };
 
+/**
+ * @controller verifyOtpController
+ * @description Verify the OTP sent to the user's email for email verification
+ * @body { email: string, otp: string }
+ * @returns { message: string }
+ */
 export const verifyOtpController = async (req: Request, res: Response): Promise<void> => {
 	try {
 		const { email, otp } = req.body as { email: string; otp: string };
@@ -190,6 +214,12 @@ export const verifyOtpController = async (req: Request, res: Response): Promise<
 	}
 };
 
+/**
+ * @controller loginUserController
+ * @description Authenticate user and provide JWT token for session management
+ * @body { email: string, password: string }
+ * @returns { message: string, token: string }
+ */
 export const loginUserController = async (
 	req: Request,
 	res: Response,
@@ -260,6 +290,12 @@ export const loginUserController = async (
 	}
 };
 
+/**
+ * @controller changePasswordController
+ * @description Allow authenticated user to change their password
+ * @body { oldPassword: string, newPassword: string }
+ * @returns { message: string }
+ */
 export const changePasswordController = async (req: Request, res: Response): Promise<void> => {
 	try {
 		const { userId } = (req as Request & { user?: DecodedToken }).user as DecodedToken;
@@ -283,6 +319,11 @@ export const changePasswordController = async (req: Request, res: Response): Pro
 	}
 }
 
+/**
+ * @controller logoutUserController
+ * @description Logout the authenticated user by clearing the JWT cookie
+ * @returns { message: string }
+ */
 export const logoutUserController = (_req: Request, res: Response): void => {
 	try {
 		clearCookie(res);
