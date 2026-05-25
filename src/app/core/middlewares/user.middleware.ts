@@ -3,20 +3,21 @@ import {
 	verifyToken,
 	type DecodedToken,
 } from "../../shared/utils/jwtHandler.js";
+import sendError from "../response/error.response.js";
 
-export const checkUserMiddleware = (
+export const GetUserMiddleware = (
 	req: Request,
 	res: Response,
 	next: NextFunction,
 ): void => {
 	const token = req.cookies.cash_flow_token;
 	if (!token) {
-		res.status(401).json({ success: false, message: "Unauthorized" });
+        sendError(res, 401, "Unauthorized", null);
 		return;
 	}
 	const decoded = verifyToken(token);
 	if (!decoded) {
-		res.status(401).json({ success: false, message: "Unauthorized" });
+		sendError(res, 401, "Unauthorized", null);
 		return;
 	}
 	(req as Request & { user?: unknown }).user = decoded as DecodedToken; // Attach decoded token data to request object
