@@ -1,10 +1,14 @@
 import express from "express";
 import morgan from "morgan";
 import corsConfig from "./config/cors.config.js";
+import cookieParser from "cookie-parser";
+
+
 import authRouter from "./modules/auth/auth.routes.js";
 import expanceRouter from "./modules/expances/expance.route.js";
-import cookieParser from "cookie-parser";
 import incomeRouter from "./modules/income/income.routes.js";
+import balanceRouter from "./modules/balance/balance.routes.js";
+
 const app = express();
 
 app.use(corsConfig);
@@ -36,6 +40,12 @@ app.use("/api/expance",expanceRouter);
  * @description Income management routes (add, get, delete, update incomes)
  */
 app.use("/api/income",incomeRouter);
+
+/**
+ * @route /api/balance
+ * @description Balance management routes (get balance)
+ */
+app.use("/api/balance",balanceRouter);
 
 /**
  * @route GET /

@@ -99,3 +99,8 @@ Note: registered under `/api/income` in the server.
     - Params: `:id` — income id
     - Success: `200` — `{ success: true, message: string, data: { income } }`
 
+#### Balance Routes (`/api/balance`)
+- GET `/` (Protected)
+    - Description: Get the current balance for the authenticated user.
+    - Success: `200` — `{ success: true, message: string, data: { balance: number } }`
+    
