@@ -3,7 +3,7 @@ import AuthModel from "./auth.schema.js";
 import type { Request, RequestHandler, Response } from "express";
 import type { RegisterUserRequest } from "./auth.types.js";
 import sendError from "../../core/response/error.response.js";
-import { generateToken, verifyToken } from "../../shared/utils/jwtHandler.js";
+import { generateToken, verifyToken, type DecodedToken } from "../../shared/utils/jwtHandler.js";
 import { clearCookie, setCookie } from "../../shared/utils/setCookies.js";
 import sendMail from "../../shared/utils/sendMail.service.js";
 import { generateOtp } from "../../shared/utils/genreateOtp.service.js";
@@ -260,7 +260,28 @@ export const loginUserController = async (
 	}
 };
 
-export const resetPasswordController = async (req: Request, res: Response): Promise<void> => {}
+export const changePasswordController = async (req: Request, res: Response): Promise<void> => {
+	try {
+		const { userId } = (req as Request & { user?: DecodedToken }).user as DecodedToken;
+		const { oldPassword, newPassword } = req.body as { oldPassword: string; newPassword: string };
+		
+		const user = await AuthModel.findById(userId).select("+password");
+		if (!user) {
+			sendError(res, 404, "User not found", null);
+			return;
+		}
+		const isMatch = await user.comparePassword(oldPassword);
+		if (!isMatch) {
+			sendError(res, 400, "Invalid old password", null);
+			return;
+		}
+		user.password = newPassword;
+		await user.save();
+		sendRes(res, 200, "Password changed successfully", null);
+	} catch (error) {
+		sendError(res, 500, "Internal server error", error);
+	}
+}
 
 export const logoutUserController = (_req: Request, res: Response): void => {
 	try {

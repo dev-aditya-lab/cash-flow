@@ -1,5 +1,6 @@
 import { Router } from "express";
-import {  loginUserController, logoutUserController, registerUserController, reSendVerificationEmailController, verifyEmailController, verifyOtpController } from "./auth.controller.js";
+import {  changePasswordController, loginUserController, logoutUserController, registerUserController, reSendVerificationEmailController, verifyEmailController, verifyOtpController } from "./auth.controller.js";
+import { checkUserMiddleware } from "./auth.middleware.js";
 const authRouter = Router();
 
 /** 
@@ -28,6 +29,15 @@ authRouter.get("/verify-email", verifyEmailController);
  * @response { success: boolean, message: string }
  */
 authRouter.post("/resend-verification-email", reSendVerificationEmailController);
+
+/** 
+ * @route POST api/auth/change-password
+ * @desc Change user's password
+ * @access Private
+ * @body { email: string, oldPassword: string, newPassword: string }
+ * @response { success: boolean, message: string }
+ */
+authRouter.post("/change-password", checkUserMiddleware, changePasswordController);
 
 /** 
  * @route POST api/auth/verify-otp
