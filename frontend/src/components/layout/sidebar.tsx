@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import {
-  LayoutDashboard, ArrowUpDown, BarChart3, User, Settings,
+  LayoutDashboard, ArrowUpDown, BarChart3, User,
   Wallet, LogOut, Calculator,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -20,7 +20,6 @@ const NAV_ITEMS = [
   { href: "/analytics",     label: "Analytics",    icon: BarChart3 },
   { href: "/calculator",    label: "Calculator",   icon: Calculator },
   { href: "/profile",       label: "Profile",      icon: User },
-  { href: "/settings",      label: "Settings",     icon: Settings },
 ];
 
 export function Sidebar() {

@@ -11,11 +11,9 @@ import { getInitials } from "@/lib/utils";
 const ROUTE_TITLES: Record<string, string> = {
   "/dashboard":    "Dashboard",
   "/transactions": "Transactions",
-  "/income":       "Income",
-  "/expenses":     "Expenses",
   "/analytics":    "Analytics",
-  "/profile":      "Profile",
-  "/settings":     "Settings",
+  "/calculator":   "Calculator",
+  "/profile":      "Profile & Settings",
 };
 
 export function TopBar() {
