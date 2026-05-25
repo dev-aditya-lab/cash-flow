@@ -7,7 +7,7 @@ export interface IExpance extends mongoose.Document {
 	mode: "cash" | "card" | "UPI" | "bank_transfer" | "other";
 	to: string;
 	resion: string;
-	description: string;
+	description?: string;
 	date: Date;
 }
 
@@ -26,7 +26,7 @@ const expanceSchema = new mongoose.Schema<IExpance>(
 		},
 		to: { type: String, required: true },
 		resion: { type: String, required: true },
-		description: { type: String, required: true },
+		description: { type: String },
 		date: { type: Date, default: Date.now },
 	},
 	{ timestamps: true },

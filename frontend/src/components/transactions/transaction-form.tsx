@@ -1,10 +1,9 @@
 "use client";
 
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { motion, AnimatePresence } from "framer-motion";
-import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -18,7 +17,6 @@ import {
 import { expenseService } from "@/services/expense.service";
 import { incomeService } from "@/services/income.service";
 import type { Expense, Income, TransactionType } from "@/types";
-import { scalePop } from "@/lib/animations";
 
 // ── Schemas ───────────────────────────────────────────────
 const expenseSchema = z.object({
@@ -43,64 +41,111 @@ type IncomeFormValues  = z.infer<typeof incomeSchema>;
 
 // ── Props ──────────────────────────────────────────────────
 interface TransactionFormProps {
-  open: boolean;
+  open:         boolean;
   onOpenChange: (open: boolean) => void;
-  type: TransactionType;
-  editData?: Expense | Income;
-  onSuccess?: () => void;
+  type:         TransactionType;
+  editData?:    Expense | Income;
+  onSuccess?:   () => void;
 }
 
-export function TransactionForm({ open, onOpenChange, type, editData, onSuccess }: TransactionFormProps) {
+const MODE_OPTIONS = [
+  { value: "cash",          label: "Cash" },
+  { value: "card",          label: "Card" },
+  { value: "UPI",           label: "UPI" },
+  { value: "bank_transfer", label: "Bank Transfer" },
+  { value: "other",         label: "Other" },
+] as const;
+
+// ── Helper: format a date string/Date for <input type="date"> ──
+function toDateInput(d?: string | Date): string {
+  if (!d) return "";
+  return new Date(d).toISOString().split("T")[0];
+}
+
+export function TransactionForm({
+  open, onOpenChange, type, editData, onSuccess,
+}: TransactionFormProps) {
   const isExpense = type === "expense";
   const isEdit    = !!editData;
 
   // ── Expense form ──────────────────────────────────────
   const expenseForm = useForm<ExpenseFormValues>({
     resolver: zodResolver(expenseSchema),
-    defaultValues: isExpense && editData
-      ? {
-          amount:      (editData as Expense).amount,
-          mode:        (editData as Expense).mode,
-          to:          (editData as Expense).to,
-          resion:      (editData as Expense).resion,
-          description: (editData as Expense).description ?? "",
-          date:        (editData as Expense).date?.split("T")[0],
-        }
-      : { amount: undefined, mode: "cash", to: "", resion: "", description: "", date: "" },
+    defaultValues: { amount: undefined, mode: "cash", to: "", resion: "", description: "", date: "" },
   });
 
   // ── Income form ───────────────────────────────────────
   const incomeForm = useForm<IncomeFormValues>({
     resolver: zodResolver(incomeSchema),
-    defaultValues: !isExpense && editData
-      ? {
-          amount:      (editData as Income).amount,
-          mode:        (editData as Income).mode,
-          from:        (editData as Income).from,
-          description: (editData as Income).description ?? "",
-          date:        (editData as Income).date?.split("T")[0],
-        }
-      : { amount: undefined, mode: "cash", from: "", description: "", date: "" },
+    defaultValues: { amount: undefined, mode: "cash", from: "", description: "", date: "" },
   });
 
-  const { handleSubmit: handleExpense, register: regExp, formState: { errors: errExp, isSubmitting: subExp }, setValue: setExpVal } = expenseForm;
-  const { handleSubmit: handleIncome, register: regInc, formState: { errors: errInc, isSubmitting: subInc }, setValue: setIncVal } = incomeForm;
+  // ── Pre-fill form whenever the dialog opens or editData changes ──
+  useEffect(() => {
+    if (!open) return;
+
+    if (isExpense) {
+      expenseForm.reset(
+        editData
+          ? {
+              amount:      (editData as Expense).amount,
+              mode:        (editData as Expense).mode,
+              to:          (editData as Expense).to,
+              resion:      (editData as Expense).resion,
+              description: (editData as Expense).description ?? "",
+              date:        toDateInput((editData as Expense).date),
+            }
+          : { amount: undefined, mode: "cash", to: "", resion: "", description: "", date: "" }
+      );
+    } else {
+      incomeForm.reset(
+        editData
+          ? {
+              amount:      (editData as Income).amount,
+              mode:        (editData as Income).mode,
+              from:        (editData as Income).from,
+              description: (editData as Income).description ?? "",
+              date:        toDateInput((editData as Income).date),
+            }
+          : { amount: undefined, mode: "cash", from: "", description: "", date: "" }
+      );
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, editData]);
+
+  // Watch mode so Select shows the live value (not just defaultValue)
+  const expMode = expenseForm.watch("mode");
+  const incMode = incomeForm.watch("mode");
+
+  const {
+    handleSubmit: handleExpense,
+    register:     regExp,
+    setValue:     setExpVal,
+    formState:    { errors: errExp, isSubmitting: subExp },
+  } = expenseForm;
+
+  const {
+    handleSubmit: handleIncome,
+    register:     regInc,
+    setValue:     setIncVal,
+    formState:    { errors: errInc, isSubmitting: subInc },
+  } = incomeForm;
 
   // ── Submit handlers ───────────────────────────────────
   const onExpenseSubmit = async (values: ExpenseFormValues) => {
     try {
       if (isEdit && editData) {
         await expenseService.editExpense(editData._id, values);
-        toast.success("Expense updated");
+        toast.success("Expense updated ✓");
       } else {
         await expenseService.addExpense(values);
-        toast.success("Expense added");
+        toast.success("Expense added ✓");
       }
       expenseForm.reset();
       onOpenChange(false);
       onSuccess?.();
     } catch {
-      toast.error("Something went wrong");
+      toast.error("Something went wrong. Try again.");
     }
   };
 
@@ -108,26 +153,18 @@ export function TransactionForm({ open, onOpenChange, type, editData, onSuccess 
     try {
       if (isEdit && editData) {
         await incomeService.editIncome(editData._id, values);
-        toast.success("Income updated");
+        toast.success("Income updated ✓");
       } else {
         await incomeService.addIncome(values);
-        toast.success("Income added");
+        toast.success("Income added ✓");
       }
       incomeForm.reset();
       onOpenChange(false);
       onSuccess?.();
     } catch {
-      toast.error("Something went wrong");
+      toast.error("Something went wrong. Try again.");
     }
   };
-
-  const modeOptions = [
-    { value: "cash",          label: "Cash" },
-    { value: "card",          label: "Card" },
-    { value: "UPI",           label: "UPI" },
-    { value: "bank_transfer", label: "Bank Transfer" },
-    { value: "other",         label: "Other" },
-  ];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -137,10 +174,13 @@ export function TransactionForm({ open, onOpenChange, type, editData, onSuccess 
             {isEdit ? "Edit" : "Add"} {isExpense ? "Expense" : "Income"}
           </DialogTitle>
           <DialogDescription>
-            Fill in the details below to {isEdit ? "update" : "record"} your {isExpense ? "expense" : "income"}.
+            {isEdit
+              ? `Update the details of your ${isExpense ? "expense" : "income"} below.`
+              : `Fill in the details to record a new ${isExpense ? "expense" : "income"}.`}
           </DialogDescription>
         </DialogHeader>
 
+        {/* ── Expense form ── */}
         {isExpense ? (
           <form onSubmit={handleExpense(onExpenseSubmit)} className="space-y-4">
             <Input
@@ -150,22 +190,24 @@ export function TransactionForm({ open, onOpenChange, type, editData, onSuccess 
               error={errExp.amount?.message}
               {...regExp("amount", { valueAsNumber: true })}
             />
+
             <div className="space-y-1.5">
               <label className="text-sm font-medium">Payment Mode</label>
               <Select
-                defaultValue={expenseForm.getValues("mode")}
-                onValueChange={(v) => setExpVal("mode", v as ExpenseFormValues["mode"])}
+                value={expMode}
+                onValueChange={(v) => setExpVal("mode", v as ExpenseFormValues["mode"], { shouldValidate: true })}
               >
                 <SelectTrigger error={errExp.mode?.message}>
                   <SelectValue placeholder="Select mode" />
                 </SelectTrigger>
                 <SelectContent>
-                  {modeOptions.map((o) => (
+                  {MODE_OPTIONS.map((o) => (
                     <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
+
             <Input
               label="Paid to"
               placeholder="e.g. Swiggy, Uber"
@@ -184,13 +226,18 @@ export function TransactionForm({ open, onOpenChange, type, editData, onSuccess 
               {...regExp("description")}
             />
             <Input label="Date (optional)" type="date" {...regExp("date")} />
+
             <DialogFooter>
-              <Button variant="outline" type="button" onClick={() => onOpenChange(false)}>Cancel</Button>
+              <Button variant="outline" type="button" onClick={() => onOpenChange(false)}>
+                Cancel
+              </Button>
               <Button type="submit" loading={subExp}>
                 {isEdit ? "Update" : "Add"} Expense
               </Button>
             </DialogFooter>
           </form>
+
+        /* ── Income form ── */
         ) : (
           <form onSubmit={handleIncome(onIncomeSubmit)} className="space-y-4">
             <Input
@@ -200,22 +247,24 @@ export function TransactionForm({ open, onOpenChange, type, editData, onSuccess 
               error={errInc.amount?.message}
               {...regInc("amount", { valueAsNumber: true })}
             />
+
             <div className="space-y-1.5">
               <label className="text-sm font-medium">Payment Mode</label>
               <Select
-                defaultValue={incomeForm.getValues("mode")}
-                onValueChange={(v) => setIncVal("mode", v as IncomeFormValues["mode"])}
+                value={incMode}
+                onValueChange={(v) => setIncVal("mode", v as IncomeFormValues["mode"], { shouldValidate: true })}
               >
                 <SelectTrigger error={errInc.mode?.message}>
                   <SelectValue placeholder="Select mode" />
                 </SelectTrigger>
                 <SelectContent>
-                  {modeOptions.map((o) => (
+                  {MODE_OPTIONS.map((o) => (
                     <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
+
             <Input
               label="Received from"
               placeholder="e.g. Employer, Client"
@@ -228,8 +277,11 @@ export function TransactionForm({ open, onOpenChange, type, editData, onSuccess 
               {...regInc("description")}
             />
             <Input label="Date (optional)" type="date" {...regInc("date")} />
+
             <DialogFooter>
-              <Button variant="outline" type="button" onClick={() => onOpenChange(false)}>Cancel</Button>
+              <Button variant="outline" type="button" onClick={() => onOpenChange(false)}>
+                Cancel
+              </Button>
               <Button type="submit" loading={subInc}>
                 {isEdit ? "Update" : "Add"} Income
               </Button>
