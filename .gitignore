@@ -40,6 +40,21 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# mobile / android build outputs
+/mobile/.gradle
+/mobile/.idea
+/mobile/build
+/mobile/app/build
+/mobile/app-release-bundle.aab
+/mobile/app-release-signed.apk.idsig
+/mobile/*.apk
+/mobile/*.keystore
+/mobile/*.jks
+/mobile/local.properties
+/mobile/**/*.apk
+/mobile/**/*.aab
+/mobile/**/*.idsig
+
 *.keystore
 *.jks
 android.keystore
