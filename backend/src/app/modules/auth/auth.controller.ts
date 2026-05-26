@@ -114,7 +114,8 @@ export const verifyEmailController = async (
 		}
 		user.emailVerified = true;
 		await user.save();
-		sendRes(res, 200, "Email verified successfully", decoded);
+		res.redirect(config.frontendUrl + "/login");
+		sendRes(res, 200, "Email verified successfully", {userEmail: user.email});
 	} catch (error) {
 		sendError(res, 400, "Invalid token", null);
 	}

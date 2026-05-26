@@ -3,27 +3,34 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useTheme } from "next-themes";
 import {
   User, Mail, Lock, Shield, Bell, LogOut, ChevronRight,
   CheckCircle2, Camera, Sun, Moon, Monitor, Check,
-  Download, Trash2, Info, Palette,
+  Download, Trash2, Info, Palette, MessageSquare, Flag, Star,
+  Bug, Sparkles, Lightbulb, FileText,
 } from "lucide-react";
 import { toast } from "sonner";
 
-import { useAuth }      from "@/store/auth-context";
-import { authService }  from "@/services/auth.service";
+import { useAuth }         from "@/store/auth-context";
+import { authService }     from "@/services/auth.service";
+import { feedbackService } from "@/services/feedback.service";
+import { reportService }   from "@/services/report.service";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button }       from "@/components/ui/button";
-import { Input }        from "@/components/ui/input";
+import { Button }          from "@/components/ui/button";
+import { Input }           from "@/components/ui/input";
+import { Textarea }        from "@/components/ui/textarea";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
-import { Separator }    from "@/components/ui/separator";
-import { getInitials }  from "@/lib/utils";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
+import { Separator }       from "@/components/ui/separator";
+import { getInitials }     from "@/lib/utils";
 import { staggerContainer, staggerItem } from "@/lib/animations";
 
 // ── Schemas ────────────────────────────────────────────────
@@ -36,6 +43,20 @@ const cpSchema = z.object({
   path:    ["confirm"],
 });
 type CpValues = z.infer<typeof cpSchema>;
+
+const feedbackSchema = z.object({
+  rating:  z.number({ required_error: "Select a rating" }).min(1).max(5),
+  message: z.string().min(10, "Min 10 characters").max(500, "Max 500 characters"),
+});
+type FeedbackValues = z.infer<typeof feedbackSchema>;
+
+const reportSchema = z.object({
+  type:    z.enum(["bug", "feature", "suggestion", "other"], {
+    required_error: "Select a type",
+  }),
+  message: z.string().min(10, "Min 10 characters").max(500, "Max 500 characters"),
+});
+type ReportValues = z.infer<typeof reportSchema>;
 
 // ── Reusable components ────────────────────────────────────
 function SectionCard({ title, children, delay = 0 }: {
@@ -94,6 +115,49 @@ function SettingRow({ icon: Icon, label, description, onClick, badge, danger }: 
   );
 }
 
+/** Inline star-rating picker */
+function StarRating({ value, onChange, error }: {
+  value:    number;
+  onChange: (v: number) => void;
+  error?:   string;
+}) {
+  const [hovered, setHovered] = useState(0);
+  const LABELS = ["", "Poor", "Fair", "Good", "Great", "Excellent"];
+
+  return (
+    <div className="flex flex-col gap-2">
+      <label className="text-sm font-medium text-foreground">Rating</label>
+      <div className="flex items-center gap-1">
+        {[1, 2, 3, 4, 5].map((n) => (
+          <button
+            key={n}
+            type="button"
+            onMouseEnter={() => setHovered(n)}
+            onMouseLeave={() => setHovered(0)}
+            onClick={() => onChange(n)}
+            className="p-0.5 transition-transform hover:scale-110 focus:outline-none"
+            aria-label={`Rate ${n}`}
+          >
+            <Star
+              className={`h-7 w-7 transition-colors ${
+                n <= (hovered || value)
+                  ? "fill-yellow-400 text-yellow-400"
+                  : "fill-none text-muted-foreground"
+              }`}
+            />
+          </button>
+        ))}
+        {(hovered || value) > 0 && (
+          <span className="ml-2 text-sm font-medium text-muted-foreground">
+            {LABELS[hovered || value]}
+          </span>
+        )}
+      </div>
+      {error && <p className="text-xs text-danger">{error}</p>}
+    </div>
+  );
+}
+
 const CURRENCIES = [
   { code: "INR", symbol: "₹", label: "Indian Rupee" },
   { code: "USD", symbol: "$", label: "US Dollar"    },
@@ -101,16 +165,50 @@ const CURRENCIES = [
   { code: "GBP", symbol: "£", label: "British Pound"},
 ];
 
+const REPORT_TYPES: {
+  value:       "bug" | "feature" | "suggestion" | "other";
+  label:       string;
+  description: string;
+  icon:        React.ElementType;
+}[] = [
+  { value: "bug",        icon: Bug,        label: "Bug Report",      description: "Something isn't working"   },
+  { value: "feature",    icon: Sparkles,   label: "Feature Request", description: "Suggest a new feature"     },
+  { value: "suggestion", icon: Lightbulb,  label: "Suggestion",      description: "Share an improvement idea" },
+  { value: "other",      icon: FileText,   label: "Other",           description: "Anything else"             },
+];
+
 // ── Page ───────────────────────────────────────────────────
 export default function ProfilePage() {
   const { user, logout } = useAuth();
   const router  = useRouter();
   const { theme, setTheme } = useTheme();
-  const [cpOpen, setCpOpen] = useState(false);
 
-  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } =
-    useForm<CpValues>({ resolver: zodResolver(cpSchema) });
+  const [cpOpen,       setCpOpen]       = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [reportOpen,   setReportOpen]   = useState(false);
 
+  // ── Change password form ──
+  const {
+    register: cpReg, handleSubmit: cpSubmit, reset: cpReset,
+    formState: { errors: cpErrors, isSubmitting: cpLoading },
+  } = useForm<CpValues>({ resolver: zodResolver(cpSchema) });
+
+  // ── Feedback form ──
+  const {
+    control: fbCtrl, register: fbReg, handleSubmit: fbSubmit, reset: fbReset,
+    formState: { errors: fbErrors, isSubmitting: fbLoading },
+  } = useForm<FeedbackValues>({
+    resolver: zodResolver(feedbackSchema),
+    defaultValues: { rating: 0, message: "" },
+  });
+
+  // ── Report form ──
+  const {
+    control: rpCtrl, register: rpReg, handleSubmit: rpSubmit, reset: rpReset,
+    formState: { errors: rpErrors, isSubmitting: rpLoading },
+  } = useForm<ReportValues>({ resolver: zodResolver(reportSchema) });
+
+  // ── Handlers ──────────────────────────────────────────────
   const handleLogout = async () => {
     try {
       await logout();
@@ -128,9 +226,31 @@ export default function ProfilePage() {
       });
       toast.success("Password changed successfully");
       setCpOpen(false);
-      reset();
+      cpReset();
     } catch {
       toast.error("Failed to change password. Check your current password.");
+    }
+  };
+
+  const onFeedback = async (values: FeedbackValues) => {
+    try {
+      await feedbackService.submit({ message: values.message, rating: values.rating });
+      toast.success("Thank you for your feedback! 🙏");
+      setFeedbackOpen(false);
+      fbReset();
+    } catch {
+      toast.error("Failed to submit feedback. Please try again.");
+    }
+  };
+
+  const onReport = async (values: ReportValues) => {
+    try {
+      await reportService.submit({ message: values.message, type: values.type });
+      toast.success("Report submitted. We'll look into it! 🔍");
+      setReportOpen(false);
+      rpReset();
+    } catch {
+      toast.error("Failed to submit report. Please try again.");
     }
   };
 
@@ -270,8 +390,23 @@ export default function ProfilePage() {
         </div>
       </SectionCard>
 
+      {/* ── Support ──────────────────────────────────────── */}
+      <SectionCard title="Support" delay={0.25}>
+        <SettingRow
+          icon={MessageSquare} label="Send Feedback"
+          description="Rate your experience and leave a message"
+          onClick={() => setFeedbackOpen(true)}
+        />
+        <Separator className="mx-4" />
+        <SettingRow
+          icon={Flag} label="Report an Issue"
+          description="Report a bug, suggest a feature, or share ideas"
+          onClick={() => setReportOpen(true)}
+        />
+      </SectionCard>
+
       {/* ── Data & Privacy ───────────────────────────────── */}
-      <SectionCard title="Data & Privacy" delay={0.25}>
+      <SectionCard title="Data & Privacy" delay={0.3}>
         <button
           onClick={() => toast.info("Export feature coming soon")}
           className="flex items-center gap-3 w-full px-4 py-3 hover:bg-accent/50 transition-colors text-left"
@@ -302,7 +437,7 @@ export default function ProfilePage() {
       </SectionCard>
 
       {/* ── About ────────────────────────────────────────── */}
-      <SectionCard title="About" delay={0.3}>
+      <SectionCard title="About" delay={0.35}>
         <div className="px-4 py-3 flex items-center gap-3">
           <Info className="h-4 w-4 text-muted-foreground shrink-0" />
           <div>
@@ -316,7 +451,7 @@ export default function ProfilePage() {
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.35 }}
+        transition={{ delay: 0.4 }}
         className="pb-4"
       >
         <Button
@@ -334,32 +469,131 @@ export default function ProfilePage() {
           <DialogHeader>
             <DialogTitle>Change Password</DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleSubmit(onChangePw)} className="space-y-4">
+          <form onSubmit={cpSubmit(onChangePw)} className="space-y-4">
             <Input
               label="Current Password" type="password"
-              error={errors.oldPassword?.message}
-              {...register("oldPassword")}
+              error={cpErrors.oldPassword?.message}
+              {...cpReg("oldPassword")}
             />
             <Input
               label="New Password" type="password"
               hint="Min 6 characters"
-              error={errors.newPassword?.message}
-              {...register("newPassword")}
+              error={cpErrors.newPassword?.message}
+              {...cpReg("newPassword")}
             />
             <Input
               label="Confirm New Password" type="password"
-              error={errors.confirm?.message}
-              {...register("confirm")}
+              error={cpErrors.confirm?.message}
+              {...cpReg("confirm")}
             />
             <DialogFooter>
-              <Button variant="outline" type="button" onClick={() => { setCpOpen(false); reset(); }}>
+              <Button variant="outline" type="button" onClick={() => { setCpOpen(false); cpReset(); }}>
                 Cancel
               </Button>
-              <Button type="submit" loading={isSubmitting}>Update password</Button>
+              <Button type="submit" loading={cpLoading}>Update password</Button>
             </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* ── Feedback dialog ───────────────────────────────── */}
+      <Dialog open={feedbackOpen} onOpenChange={(o) => { setFeedbackOpen(o); if (!o) fbReset(); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <MessageSquare className="h-5 w-5 text-primary" />
+              Send Feedback
+            </DialogTitle>
+          </DialogHeader>
+          <form onSubmit={fbSubmit(onFeedback)} className="space-y-4">
+            {/* Star rating */}
+            <Controller
+              control={fbCtrl}
+              name="rating"
+              render={({ field }) => (
+                <StarRating
+                  value={field.value}
+                  onChange={field.onChange}
+                  error={fbErrors.rating?.message}
+                />
+              )}
+            />
+
+            <Textarea
+              label="Your message"
+              placeholder="Tell us what you think about CashFlow…"
+              hint="Between 10 and 500 characters"
+              error={fbErrors.message?.message}
+              {...fbReg("message")}
+            />
+
+            <DialogFooter>
+              <Button variant="outline" type="button" onClick={() => { setFeedbackOpen(false); fbReset(); }}>
+                Cancel
+              </Button>
+              <Button type="submit" loading={fbLoading}>Submit feedback</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Report dialog ─────────────────────────────────── */}
+      <Dialog open={reportOpen} onOpenChange={(o) => { setReportOpen(o); if (!o) rpReset(); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Flag className="h-5 w-5 text-primary" />
+              Report an Issue
+            </DialogTitle>
+          </DialogHeader>
+          <form onSubmit={rpSubmit(onReport)} className="space-y-4">
+            {/* Report type */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm font-medium text-foreground">Type</label>
+              <Controller
+                control={rpCtrl}
+                name="type"
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger error={rpErrors.type?.message}>
+                      <SelectValue placeholder="Select a report type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {REPORT_TYPES.map(({ value, label, icon: Icon }) => (
+                        <SelectItem key={value} value={value}>
+                          <span className="flex items-center gap-2">
+                            <Icon className="h-3.5 w-3.5 shrink-0" />
+                            {label}
+                          </span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              {rpErrors.type && (
+                <p className="text-xs text-danger">{rpErrors.type.message}</p>
+              )}
+            </div>
+
+            <Textarea
+              label="Describe the issue"
+              placeholder="Please give as much detail as possible…"
+              hint="Between 10 and 500 characters"
+              error={rpErrors.message?.message}
+              {...rpReg("message")}
+            />
+
+            <DialogFooter>
+              <Button variant="outline" type="button" onClick={() => { setReportOpen(false); rpReset(); }}>
+                Cancel
+              </Button>
+              <Button type="submit" loading={rpLoading}>Submit report</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
     </div>
   );
 }

@@ -8,6 +8,8 @@ import authRouter from "./modules/auth/auth.routes.js";
 import expanceRouter from "./modules/expances/expance.route.js";
 import incomeRouter from "./modules/income/income.routes.js";
 import balanceRouter from "./modules/balance/balance.routes.js";
+import feedbackRouter from "./modules/feedback/feedback.route.js";
+import reportRouter from "./modules/report/report.route.js";
 
 const app = express();
 
@@ -46,6 +48,18 @@ app.use("/api/income",incomeRouter);
  * @description Balance management routes (get balance)
  */
 app.use("/api/balance",balanceRouter);
+
+/**
+ * @route /api/feedback
+ * @description Feedback management routes (submit feedback)
+ */
+app.use("/api/feedback",feedbackRouter);
+
+/**
+ * @route /api/report
+ * @description Report management routes (submit report)
+ */
+app.use("/api/report",reportRouter);
 
 /**
  * @route GET /
