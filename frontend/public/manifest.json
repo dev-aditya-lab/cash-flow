@@ -68,7 +68,8 @@
     "related_applications": [
         {
             "platform": "play",
-            "url": "https://play.google.com/store/apps/details?id="
+            "url": "https://play.google.com/store/apps/details?id=cashflow.devaditya.dev",
+            "id": "cashflow.devaditya.dev"
         }
     ],
     "prefer_related_applications": false,
