@@ -1,7 +1,7 @@
 // CashFlow Service Worker
-const STATIC_CACHE = "cashflow-static-v1";
-const API_CACHE    = "cashflow-api-v1";
-const DYNAMIC_CACHE = "cashflow-dynamic-v1";
+const STATIC_CACHE = "cashflow-static-v2";
+const API_CACHE    = "cashflow-api-v2";
+const DYNAMIC_CACHE = "cashflow-dynamic-v2";
 
 const APP_SHELL = [
   "/",
@@ -67,7 +67,8 @@ self.addEventListener("fetch", (event) => {
         (cached) =>
           cached ||
           fetch(request).then((res) => {
-            caches.open(STATIC_CACHE).then((c) => c.put(request, res.clone()));
+            const clone = res.clone();
+            caches.open(STATIC_CACHE).then((c) => c.put(request, clone));
             return res;
           })
       )
