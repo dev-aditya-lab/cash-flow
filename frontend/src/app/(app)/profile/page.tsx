@@ -45,15 +45,13 @@ const cpSchema = z.object({
 type CpValues = z.infer<typeof cpSchema>;
 
 const feedbackSchema = z.object({
-  rating:  z.number({ required_error: "Select a rating" }).min(1).max(5),
+  rating:  z.number().min(1, "Select a rating").max(5),
   message: z.string().min(10, "Min 10 characters").max(500, "Max 500 characters"),
 });
 type FeedbackValues = z.infer<typeof feedbackSchema>;
 
 const reportSchema = z.object({
-  type:    z.enum(["bug", "feature", "suggestion", "other"], {
-    required_error: "Select a type",
-  }),
+  type:    z.enum(["bug", "feature", "suggestion", "other"]),
   message: z.string().min(10, "Min 10 characters").max(500, "Max 500 characters"),
 });
 type ReportValues = z.infer<typeof reportSchema>;
