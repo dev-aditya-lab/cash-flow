@@ -223,3 +223,34 @@ body {
 .gradient-mask-b {
   mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
 }
+
+/* ── Safe area / PWA ───────────────────────────────────── */
+:root {
+  --nav-height: 4.5rem; /* 72px: island bar + gap */
+}
+.pb-safe  { padding-bottom: env(safe-area-inset-bottom, 0px); }
+.pt-safe  { padding-top:    env(safe-area-inset-top, 0px); }
+.pb-nav   { padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom, 0px)); }
+
+/* ── Floating island nav ───────────────────────────────── */
+.island-nav {
+  border-radius: 9999px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.10);
+}
+
+/* ── Card gradients (hero + stat cards) ────────────────── */
+.card-gradient-hero {
+  background: linear-gradient(135deg, hsl(260 60% 52%) 0%, hsl(221 83% 48%) 100%);
+}
+.card-gradient-success {
+  background: linear-gradient(135deg, hsl(142 76% 36%) 0%, hsl(142 76% 26%) 100%);
+}
+.card-gradient-danger {
+  background: linear-gradient(135deg, hsl(0 84% 60%) 0%, hsl(0 84% 48%) 100%);
+}
+.card-gradient-info {
+  background: linear-gradient(135deg, hsl(221 83% 53%) 0%, hsl(221 83% 42%) 100%);
+}
+
+/* ── Splash scroll lock ────────────────────────────────── */
+body.splash-active { overflow: hidden; }

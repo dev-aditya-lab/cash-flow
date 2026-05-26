@@ -62,3 +62,10 @@ export const bottomSheetVariants: Variants = {
   exit:    { y: "100%", opacity: 0, transition: { duration: 0.25, ease: [0.22, 1, 0.36, 1] } },
 };
 
+// ── Splash screen ─────────────────────────────────────────
+export const splashExit: Variants = {
+  initial: { opacity: 0, scale: 0.96 },
+  enter:   { opacity: 1, scale: 1,    transition: { duration: 0.5,  ease: [0.22, 1, 0.36, 1] } },
+  exit:    { opacity: 0, scale: 1.04, transition: { duration: 0.4,  ease: [0.22, 1, 0.36, 1] } },
+};
+

@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "sonner";
 import { AuthProvider } from "@/store/auth-context";
+import { ServiceWorkerRegistration } from "@/components/pwa/service-worker-registration";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -25,6 +26,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
 	width: "device-width",
 	initialScale: 1,
+	viewportFit: "cover",
 	themeColor: [
 		{ media: "(prefers-color-scheme: light)", color: "#ffffff" },
 		{ media: "(prefers-color-scheme: dark)", color: "#0d0d0d" },
@@ -56,6 +58,11 @@ export default function RootLayout({
 					sizes="180x180"
 					href="/apple-touch-icon.png"
 				/>
+				<link rel="manifest" href="/manifest.webmanifest" />
+				<meta name="mobile-web-app-capable" content="yes" />
+				<meta name="apple-mobile-web-app-capable" content="yes" />
+				<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+				<meta name="apple-mobile-web-app-title" content="CashFlow" />
 			</head>
 			<body className="min-h-full antialiased">
 				<ThemeProvider
@@ -65,6 +72,7 @@ export default function RootLayout({
 					disableTransitionOnChange={false}
 				>
 					<AuthProvider>
+						<ServiceWorkerRegistration />
 						{children}
 						<Toaster
 							position="top-right"

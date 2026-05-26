@@ -2,76 +2,119 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
-  LayoutDashboard, ArrowUpDown, BarChart3, User, Calculator, ShieldCheck,
+  LayoutDashboard,
+  ArrowUpDown,
+  Plus,
+  BarChart3,
+  User,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/store/auth-context";
 
-const BASE_NAV = [
-  { href: "/dashboard",    label: "Home",   icon: LayoutDashboard },
-  { href: "/transactions", label: "Txns",   icon: ArrowUpDown     },
-  { href: "/calculator",   label: "Calc",   icon: Calculator      },
-  { href: "/analytics",    label: "Charts", icon: BarChart3       },
-  { href: "/profile",      label: "Profile",icon: User            },
+const LEFT_NAV = [
+  { href: "/dashboard",    label: "Home", icon: LayoutDashboard },
+  { href: "/transactions", label: "Txns", icon: ArrowUpDown     },
 ];
 
-const ADMIN_NAV = { href: "/admin", label: "Admin", icon: ShieldCheck };
+const RIGHT_NAV = [
+  { href: "/analytics", label: "Charts",  icon: BarChart3 },
+  { href: "/profile",   label: "Profile", icon: User      },
+];
 
 export function BottomNav() {
-  const pathname    = usePathname();
-  const { user }    = useAuth();
+  const pathname = usePathname();
+  const { user } = useAuth();
 
-  const navItems = user?.role === "admin"
-    ? [...BASE_NAV, ADMIN_NAV]
-    : BASE_NAV;
+  const handleFABClick = () => {
+    window.dispatchEvent(
+      new CustomEvent("cashflow:open-form", { detail: { type: "expense" } })
+    );
+  };
+
+  const renderNavItem = ({
+    href,
+    label,
+    icon: Icon,
+  }: { href: string; label: string; icon: React.ElementType }) => {
+    const active =
+      pathname === href ||
+      (href !== "/dashboard" && pathname.startsWith(href + "/"));
+
+    return (
+      <Link
+        key={href}
+        href={href}
+        aria-label={label}
+        className="relative flex flex-1 flex-col items-center justify-center py-3 min-w-0 select-none"
+      >
+        <motion.div
+          whileTap={{ scale: 0.84, transition: { duration: 0.1 } }}
+          className="relative flex flex-col items-center gap-1"
+        >
+          {/* Animated background pill for active item */}
+          {active && (
+            <motion.div
+              layoutId="bnav-pill"
+              className="absolute -inset-2 rounded-xl bg-foreground/8"
+              transition={{ type: "spring", stiffness: 400, damping: 30 }}
+            />
+          )}
+
+          <Icon
+            className={cn(
+              "relative h-5 w-5 transition-all duration-200",
+              active ? "text-foreground" : "text-muted-foreground"
+            )}
+            strokeWidth={active ? 2.2 : 1.8}
+          />
+
+          {/* Active dot below icon */}
+          <AnimatePresence>
+            {active && (
+              <motion.div
+                key={`dot-${href}`}
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0 }}
+                transition={{ type: "spring", stiffness: 500, damping: 25 }}
+                className="relative h-1 w-1 rounded-full bg-foreground"
+              />
+            )}
+          </AnimatePresence>
+        </motion.div>
+      </Link>
+    );
+  };
+
+  // Hide on non-authenticated pages
+  if (!user) return null;
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 glass border-t border-border">
-      <div className="flex items-center justify-around h-16 px-2 pb-safe">
-        {navItems.map(({ href, label, icon: Icon }) => {
-          const active   = pathname === href || pathname.startsWith(href + "/");
-          const isAdmin  = href === "/admin";
-          return (
-            <Link key={href} href={href} className="flex flex-col items-center gap-0.5 flex-1">
-              <motion.div
-                whileTap={{ scale: 0.88 }}
-                className="relative flex flex-col items-center justify-center w-full gap-0.5 py-1"
-              >
-                {active && (
-                  <motion.div
-                    layoutId="bottom-nav-pill"
-                    className="absolute -top-1 left-1/2 -translate-x-1/2 h-1 w-8 rounded-full bg-primary"
-                    transition={{ type: "spring", bounce: 0.3, duration: 0.4 }}
-                  />
-                )}
-                <Icon
-                  className={cn(
-                    "h-5 w-5 transition-colors",
-                    active
-                      ? "text-foreground"
-                      : isAdmin
-                        ? "text-primary/60"
-                        : "text-muted-foreground"
-                  )}
-                />
-                <span
-                  className={cn(
-                    "text-[10px] font-medium transition-colors",
-                    active
-                      ? "text-foreground"
-                      : isAdmin
-                        ? "text-primary/60"
-                        : "text-muted-foreground"
-                  )}
-                >
-                  {label}
-                </span>
-              </motion.div>
-            </Link>
-          );
-        })}
+    <nav
+      className="md:hidden fixed bottom-0 left-0 right-0 z-50 flex justify-center pb-safe pointer-events-none"
+      aria-label="Main navigation"
+    >
+      <div className="pointer-events-auto mx-4 mb-3 flex items-center h-14 glass island-nav px-2 w-full max-w-sm">
+        {/* Left nav items */}
+        {LEFT_NAV.map(renderNavItem)}
+
+        {/* Center FAB */}
+        <div className="flex items-center justify-center px-2 shrink-0">
+          <motion.button
+            whileTap={{ scale: 0.88, transition: { duration: 0.1 } }}
+            whileHover={{ scale: 1.06 }}
+            onClick={handleFABClick}
+            aria-label="Add transaction"
+            className="flex h-12 w-12 items-center justify-center rounded-full card-gradient-hero text-white shadow-lg ring-2 ring-background"
+          >
+            <Plus className="h-5 w-5" strokeWidth={2.5} />
+          </motion.button>
+        </div>
+
+        {/* Right nav items */}
+        {RIGHT_NAV.map(renderNavItem)}
       </div>
     </nav>
   );
