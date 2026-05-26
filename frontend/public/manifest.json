@@ -1,5 +1,5 @@
 {
-    "name": "CashFlow",
+    "name": "CashFlow — Expense Tracker",
     "short_name": "CashFlow",
     "start_url": "/dashboard",
     "id": "/dashboard",
