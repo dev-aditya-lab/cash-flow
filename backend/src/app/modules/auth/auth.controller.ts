@@ -107,7 +107,6 @@ export const verifyEmailController = async (
 	try {
 		const { token } = req.query as { token: string };
 		const decoded = verifyToken(token);
-		console.log(decoded);
 		const user = await AuthModel.findOne({ email: decoded.email });
 		if (!user) {
 			sendError(res, 400, "Invalid token", null);
@@ -207,6 +206,13 @@ export const verifyOtpController = async (req: Request, res: Response): Promise<
 		const { email, otp } = req.body as { email: string; otp: string };
 		const isVerified = await verifyOtp(res, email, otp);
 		if (isVerified) {
+			const user = await AuthModel.findOne({ email });
+			if (!user) {
+				sendError(res, 400, "User not found", null);
+				return;
+			}
+			user.emailVerified = true;
+			await user.save();
 			sendRes(res, 200, "OTP verified successfully", null);
 		}
 	} catch (error) {
