@@ -1,13 +1,25 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const PUBLIC_PATHS = [
+/**
+ * Auth pages — if the user is already logged in, redirect them to /dashboard
+ * (no point showing login/signup to someone who is already in).
+ */
+const AUTH_PAGES = [
   "/login",
   "/signup",
   "/forgot-password",
-  "/verify-otp",
   "/verify-email",
-  // Legal & Play Store required pages (publicly accessible without login)
+  // /verify-otp is excluded below — it must remain reachable even when logged in
+];
+
+/**
+ * Truly public pages — accessible by EVERYONE regardless of auth state.
+ * These must never trigger the "logged-in → dashboard" redirect.
+ * Required by Google Play Store: privacy policy, terms, and account deletion
+ * must work without being logged in.
+ */
+const OPEN_PAGES = [
   "/privacy-policy",
   "/terms",
   "/delete-account",
@@ -15,8 +27,6 @@ const PUBLIC_PATHS = [
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-
-  const isPublicPath = PUBLIC_PATHS.some((p) => pathname.startsWith(p));
 
   /**
    * We check `cf_logged_in` — a plain (non-HttpOnly) cookie written by
@@ -30,16 +40,26 @@ export function middleware(request: NextRequest) {
    */
   const isLoggedIn = request.cookies.has("cf_logged_in");
 
-  // Unauthenticated user trying to access a protected page
-  if (!isPublicPath && !isLoggedIn) {
+  const isOpenPage  = OPEN_PAGES.some((p) => pathname.startsWith(p));
+  const isAuthPage  = AUTH_PAGES.some((p) => pathname.startsWith(p));
+  const isOtpPage   = pathname.startsWith("/verify-otp");
+
+  // ── 1. Open pages (legal / Play Store) ─ let everyone through ────────────
+  if (isOpenPage) return NextResponse.next();
+
+  // ── 2. Auth pages ─ redirect to dashboard if already logged in ────────────
+  if (isAuthPage && isLoggedIn) {
+    return NextResponse.redirect(new URL("/dashboard", request.url));
+  }
+
+  // ── 3. OTP verify page ─ always reachable (mid-registration flow) ─────────
+  if (isOtpPage) return NextResponse.next();
+
+  // ── 4. All other pages are protected ─────────────────────────────────────
+  if (!isLoggedIn) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("next", pathname);
     return NextResponse.redirect(loginUrl);
-  }
-
-  // Logged-in user trying to access auth pages (except OTP verify)
-  if (isPublicPath && isLoggedIn && !pathname.startsWith("/verify-otp")) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
   return NextResponse.next();
