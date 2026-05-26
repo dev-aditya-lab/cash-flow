@@ -5,8 +5,10 @@ import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   LayoutDashboard, ArrowUpDown, BarChart3, User,
-  Wallet, LogOut, Calculator, ShieldCheck,
+  LogOut, Calculator, ShieldCheck,
 } from "lucide-react";
+import Image from "next/image";
+import cashFlowLogo from "@/../public/cashFlow-Logo-862x862.png";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/store/auth-context";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -46,9 +48,13 @@ export function Sidebar() {
     <aside className="hidden md:flex flex-col w-60 shrink-0 h-screen sticky top-0 border-r border-border bg-card">
       {/* Logo */}
       <div className="flex items-center gap-2.5 px-5 h-16 border-b border-border shrink-0">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-          <Wallet className="h-4 w-4" />
-        </div>
+        <Image
+          src={cashFlowLogo}
+          alt="CashFlow"
+          width={32}
+          height={32}
+          className="rounded-lg shrink-0"
+        />
         <span className="font-bold text-base tracking-tight">CashFlow</span>
       </div>
 
@@ -63,7 +69,7 @@ export function Sidebar() {
                 whileHover={{ x: 2 }}
                 whileTap={{ scale: 0.98 }}
                 className={cn(
-                  "relative flex items-center gap-3 rounded-[var(--radius)] px-3 py-2.5 text-sm font-medium transition-colors duration-150 cursor-pointer",
+                  "relative flex items-center gap-3 rounded-(--radius) px-3 py-2.5 text-sm font-medium transition-colors duration-150 cursor-pointer",
                   active
                     ? "bg-primary text-primary-foreground"
                     : isAdmin
@@ -76,7 +82,7 @@ export function Sidebar() {
                 {active && (
                   <motion.div
                     layoutId="sidebar-active"
-                    className="absolute inset-0 rounded-[var(--radius)] bg-primary -z-10"
+                    className="absolute inset-0 rounded-(--radius) bg-primary -z-10"
                     transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
                   />
                 )}
@@ -88,7 +94,7 @@ export function Sidebar() {
 
       {/* User / logout */}
       <div className="p-3 border-t border-border shrink-0">
-        <div className="flex items-center gap-3 p-2 rounded-[var(--radius)] hover:bg-accent transition-colors cursor-default group">
+        <div className="flex items-center gap-3 p-2 rounded-(--radius) hover:bg-accent transition-colors cursor-default group">
           <Avatar className="h-8 w-8">
             <AvatarImage src={user?.avatar} />
             <AvatarFallback>{getInitials(user?.name ?? "U")}</AvatarFallback>

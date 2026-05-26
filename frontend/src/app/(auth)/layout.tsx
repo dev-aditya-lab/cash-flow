@@ -1,4 +1,5 @@
-import { Wallet } from "lucide-react";
+import Image from "next/image";
+import cashFlowLogo from "@/../public/cashFlow-Logo-862x862.png";
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -14,9 +15,13 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         />
         {/* Logo */}
         <div className="flex items-center gap-3 relative z-10">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-foreground/10 border border-primary-foreground/20">
-            <Wallet className="h-5 w-5" />
-          </div>
+          <Image
+            src={cashFlowLogo}
+            alt="CashFlow"
+            width={40}
+            height={40}
+            className="rounded-xl shrink-0"
+          />
           <span className="font-bold text-xl tracking-tight">CashFlow</span>
         </div>
 
@@ -31,9 +36,9 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             </p>
           </div>
           {/* Testimonial */}
-          <div className="rounded-[var(--radius-xl)] bg-primary-foreground/10 border border-primary-foreground/20 p-5 max-w-sm">
+          <div className="rounded-xl bg-primary-foreground/10 border border-primary-foreground/20 p-5 max-w-sm">
             <p className="text-sm text-primary-foreground/80 italic leading-relaxed">
-              "CashFlow completely changed how I think about money. The analytics are insanely good."
+              &quot;CashFlow completely changed how I think about money. The analytics are insanely good.&quot;
             </p>
             <div className="flex items-center gap-2 mt-3">
               <div className="h-7 w-7 rounded-full bg-primary-foreground/20 flex items-center justify-center text-xs font-bold">R</div>
@@ -52,9 +57,13 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       <div className="flex flex-col items-center justify-center p-6 sm:p-12">
         {/* Mobile logo */}
         <div className="flex items-center gap-2 mb-8 lg:hidden">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <Wallet className="h-4 w-4" />
-          </div>
+          <Image
+            src={cashFlowLogo}
+            alt="CashFlow"
+            width={32}
+            height={32}
+            className="rounded-lg shrink-0"
+          />
           <span className="font-bold text-lg">CashFlow</span>
         </div>
         {children}
