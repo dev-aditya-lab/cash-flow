@@ -44,18 +44,24 @@ export function middleware(request: NextRequest) {
   const isAuthPage  = AUTH_PAGES.some((p) => pathname.startsWith(p));
   const isOtpPage   = pathname.startsWith("/verify-otp");
 
-  // ── 1. Open pages (legal / Play Store) ─ let everyone through ────────────
+  // ── 1. Open pages (legal / Play Store) — let everyone through ───────────
   if (isOpenPage) return NextResponse.next();
 
-  // ── 2. Auth pages ─ redirect to dashboard if already logged in ────────────
-  if (isAuthPage && isLoggedIn) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
-  }
-
-  // ── 3. OTP verify page ─ always reachable (mid-registration flow) ─────────
+  // ── 2. OTP verify — always reachable (mid-registration flow) ─────────────
   if (isOtpPage) return NextResponse.next();
 
-  // ── 4. All other pages are protected ─────────────────────────────────────
+  // ── 3. Auth pages (login, signup, forgot-password, verify-email) ──────────
+  //       Logged-in  → bounce to dashboard (no point re-showing the form)
+  //       Logged-out → let through (MUST return here to avoid falling into
+  //                    the protected-route guard below and creating a loop)
+  if (isAuthPage) {
+    if (isLoggedIn) {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
+    return NextResponse.next();
+  }
+
+  // ── 4. Everything else is a protected app page ────────────────────────────
   if (!isLoggedIn) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("next", pathname);
