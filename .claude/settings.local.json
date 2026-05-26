@@ -13,7 +13,10 @@
       "Bash(Select-String '\"version\"')",
       "Bash(xargs grep -l \"manifest\")",
       "Bash(xargs grep -l \"MetadataRoute\")",
-      "Bash(Remove-Item \"c:\\\\Users\\\\ad112\\\\aadiWorkspace\\\\Coding\\\\my Projects\\\\cashFlow\\\\frontend\\\\src\\\\app\\\\manifest.ts\")"
+      "Bash(Remove-Item \"c:\\\\Users\\\\ad112\\\\aadiWorkspace\\\\Coding\\\\my Projects\\\\cashFlow\\\\frontend\\\\src\\\\app\\\\manifest.ts\")",
+      "Bash(git add *)",
+      "Bash(git commit -m 'fix: set application/manifest+json content-type for manifest.json and add SW headers *)",
+      "Bash(git push *)"
     ]
   }
 }
