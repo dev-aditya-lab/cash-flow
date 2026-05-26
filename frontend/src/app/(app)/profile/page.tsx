@@ -11,7 +11,7 @@ import {
   User, Mail, Lock, Shield, Bell, LogOut, ChevronRight,
   CheckCircle2, Camera, Sun, Moon, Monitor, Check,
   Download, Trash2, Info, Palette, MessageSquare, Flag, Star,
-  Bug, Sparkles, Lightbulb, FileText, ShieldCheck,
+  Bug, Sparkles, Lightbulb, FileText, ShieldCheck, ExternalLink,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -434,7 +434,7 @@ export default function ProfilePage() {
         </button>
         <Separator className="mx-4" />
         <button
-          onClick={() => toast.info("Coming soon")}
+          onClick={() => router.push("/delete-account")}
           className="flex items-center gap-3 w-full px-4 py-3 hover:bg-danger-bg/50 transition-colors text-left"
         >
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-danger-bg shrink-0">
@@ -457,6 +457,34 @@ export default function ProfilePage() {
             <p className="text-xs text-muted-foreground">Premium personal finance tracker</p>
           </div>
         </div>
+        <Separator className="mx-4" />
+        <button
+          onClick={() => router.push("/privacy-policy")}
+          className="flex items-center gap-3 w-full px-4 py-3 hover:bg-accent/50 transition-colors text-left"
+        >
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-secondary shrink-0">
+            <ShieldCheck className="h-4 w-4" />
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-medium">Privacy Policy</p>
+            <p className="text-xs text-muted-foreground">How we handle your data</p>
+          </div>
+          <ExternalLink className="h-4 w-4 text-muted-foreground shrink-0" />
+        </button>
+        <Separator className="mx-4" />
+        <button
+          onClick={() => router.push("/terms")}
+          className="flex items-center gap-3 w-full px-4 py-3 hover:bg-accent/50 transition-colors text-left"
+        >
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-secondary shrink-0">
+            <FileText className="h-4 w-4" />
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-medium">Terms of Service</p>
+            <p className="text-xs text-muted-foreground">Rules and usage guidelines</p>
+          </div>
+          <ExternalLink className="h-4 w-4 text-muted-foreground shrink-0" />
+        </button>
       </SectionCard>
 
       {/* ── Sign out ─────────────────────────────────────── */}

@@ -7,6 +7,10 @@ const PUBLIC_PATHS = [
   "/forgot-password",
   "/verify-otp",
   "/verify-email",
+  // Legal & Play Store required pages (publicly accessible without login)
+  "/privacy-policy",
+  "/terms",
+  "/delete-account",
 ];
 
 export function middleware(request: NextRequest) {
