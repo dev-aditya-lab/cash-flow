@@ -6,10 +6,12 @@ const DYNAMIC_CACHE = "cashflow-dynamic-v1";
 const APP_SHELL = [
   "/",
   "/dashboard",
+  "/manifest.json",
   "/cashFlow-Logo-862x862.png",
   "/web-app-manifest-192x192.png",
   "/web-app-manifest-512x512.png",
   "/apple-touch-icon.png",
+  "/favicon-96x96.png",
   "/favicon.ico",
 ];
 

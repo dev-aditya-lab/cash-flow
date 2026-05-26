@@ -12,7 +12,8 @@
       "Bash(Select-Object FullName)",
       "Bash(Select-String '\"version\"')",
       "Bash(xargs grep -l \"manifest\")",
-      "Bash(xargs grep -l \"MetadataRoute\")"
+      "Bash(xargs grep -l \"MetadataRoute\")",
+      "Bash(Remove-Item \"c:\\\\Users\\\\ad112\\\\aadiWorkspace\\\\Coding\\\\my Projects\\\\cashFlow\\\\frontend\\\\src\\\\app\\\\manifest.ts\")"
     ]
   }
 }

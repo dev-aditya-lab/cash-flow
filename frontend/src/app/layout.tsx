@@ -58,7 +58,7 @@ export default function RootLayout({
 					sizes="180x180"
 					href="/apple-touch-icon.png"
 				/>
-				<link rel="manifest" href="/manifest.webmanifest" />
+				<link rel="manifest" href="/manifest.json" />
 				<meta name="mobile-web-app-capable" content="yes" />
 				<meta name="apple-mobile-web-app-capable" content="yes" />
 				<meta name="apple-mobile-web-app-status-bar-style" content="default" />
