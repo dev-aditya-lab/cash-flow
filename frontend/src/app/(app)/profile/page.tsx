@@ -11,7 +11,7 @@ import {
   User, Mail, Lock, Shield, Bell, LogOut, ChevronRight,
   CheckCircle2, Camera, Sun, Moon, Monitor, Check,
   Download, Trash2, Info, Palette, MessageSquare, Flag, Star,
-  Bug, Sparkles, Lightbulb, FileText,
+  Bug, Sparkles, Lightbulb, FileText, ShieldCheck,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -402,6 +402,20 @@ export default function ProfilePage() {
           onClick={() => setReportOpen(true)}
         />
       </SectionCard>
+
+      {/* ── Admin (mobile only, admin role only) ─────────── */}
+      {user?.role === "admin" && (
+        <div className="md:hidden">
+          <SectionCard title="Administration" delay={0.28}>
+            <SettingRow
+              icon={ShieldCheck}
+              label="Admin Panel"
+              description="Manage users, feedback and reports"
+              onClick={() => router.push("/admin")}
+            />
+          </SectionCard>
+        </div>
+      )}
 
       {/* ── Data & Privacy ───────────────────────────────── */}
       <SectionCard title="Data & Privacy" delay={0.3}>
