@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   LayoutDashboard, ArrowUpDown, BarChart3, User,
-  Wallet, LogOut, Calculator,
+  Wallet, LogOut, Calculator, ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/store/auth-context";
@@ -14,18 +14,24 @@ import { getInitials } from "@/lib/utils";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
-const NAV_ITEMS = [
-  { href: "/dashboard",     label: "Dashboard",    icon: LayoutDashboard },
-  { href: "/transactions",  label: "Transactions", icon: ArrowUpDown },
-  { href: "/analytics",     label: "Analytics",    icon: BarChart3 },
-  { href: "/calculator",    label: "Calculator",   icon: Calculator },
-  { href: "/profile",       label: "Profile",      icon: User },
+const BASE_NAV = [
+  { href: "/dashboard",    label: "Dashboard",    icon: LayoutDashboard },
+  { href: "/transactions", label: "Transactions", icon: ArrowUpDown     },
+  { href: "/analytics",    label: "Analytics",    icon: BarChart3       },
+  { href: "/calculator",   label: "Calculator",   icon: Calculator      },
+  { href: "/profile",      label: "Profile",      icon: User            },
 ];
 
+const ADMIN_NAV = { href: "/admin", label: "Admin", icon: ShieldCheck };
+
 export function Sidebar() {
-  const pathname  = usePathname();
+  const pathname        = usePathname();
   const { user, logout } = useAuth();
-  const router    = useRouter();
+  const router          = useRouter();
+
+  const navItems = user?.role === "admin"
+    ? [...BASE_NAV, ADMIN_NAV]
+    : BASE_NAV;
 
   const handleLogout = async () => {
     try {
@@ -48,8 +54,9 @@ export function Sidebar() {
 
       {/* Nav */}
       <nav className="flex flex-col gap-1 flex-1 overflow-y-auto p-3">
-        {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+        {navItems.map(({ href, label, icon: Icon }) => {
           const active = pathname === href || pathname.startsWith(href + "/");
+          const isAdmin = href === "/admin";
           return (
             <Link key={href} href={href}>
               <motion.div
@@ -59,7 +66,9 @@ export function Sidebar() {
                   "relative flex items-center gap-3 rounded-[var(--radius)] px-3 py-2.5 text-sm font-medium transition-colors duration-150 cursor-pointer",
                   active
                     ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                    : isAdmin
+                      ? "text-muted-foreground hover:bg-primary/10 hover:text-primary"
+                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                 )}
               >
                 <Icon className="h-4 w-4 shrink-0" />

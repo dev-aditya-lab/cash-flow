@@ -1,5 +1,5 @@
 import { Router } from "express";
-import {  changePasswordController, loginUserController, logoutUserController, registerUserController, reSendVerificationEmailController, verifyEmailController, verifyOtpController } from "./auth.controller.js";
+import {  changePasswordController, getMeController, loginUserController, logoutUserController, registerUserController, reSendVerificationEmailController, verifyEmailController, verifyOtpController } from "./auth.controller.js";
 import { checkUserMiddleware } from "./auth.middleware.js";
 const authRouter = Router();
 
@@ -57,7 +57,15 @@ authRouter.post("/verify-otp", verifyOtpController);
  */
 authRouter.post("/login", loginUserController);
 
-/** 
+/**
+ * @route GET api/auth/me
+ * @desc Get currently authenticated user's profile (always fresh from DB)
+ * @access Private
+ * @response { success: boolean, message: string, data: User }
+ */
+authRouter.get("/me", checkUserMiddleware, getMeController);
+
+/**
  * @route POST api/auth/logout
  * @desc Logout a user
  * @access Public

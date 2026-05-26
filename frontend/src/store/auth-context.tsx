@@ -56,43 +56,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const refreshUser = useCallback(async () => {
     const versionAtStart = loginVersionRef.current;
-    const stored = loadUser();
 
     try {
-      await api.get("/balance/");
+      // Always fetch from DB so role / profile changes are picked up immediately
+      // without requiring a logout + login cycle.
+      const { data } = await api.get<{ success: boolean; data: User }>("/auth/me");
 
       // Guard: if login() ran while this request was in-flight, bail out
       if (loginVersionRef.current !== versionAtStart) return;
 
-      if (stored) {
-        setState({ user: stored, isLoading: false, isAuthenticated: true });
-      } else {
-        // Cookie valid but no profile in localStorage (edge case)
-        setState({
-          user: {
-            _id: "", name: "User", email: "",
-            emailVerified: true, isBanned: false, role: "user",
-            createdAt: "", updatedAt: "",
-          },
-          isLoading: false,
-          isAuthenticated: true,
-        });
-      }
+      const freshUser = data.data;
+      saveUser(freshUser);
+      setState({ user: freshUser, isLoading: false, isAuthenticated: true });
     } catch (err: unknown) {
       // Guard: ignore stale error if login() already succeeded
       if (loginVersionRef.current !== versionAtStart) return;
 
-      // Only clear session on 401 (unauthenticated).
-      // Network errors, 500s, etc. should NOT log the user out —
-      // they indicate a temporary backend problem, not an expired session.
       const status = (err as import("axios").AxiosError)?.response?.status;
       if (status === 401) {
+        // Expired / missing session — clear everything
         clearUser();
         clearSessionMarker();
         setState({ user: null, isLoading: false, isAuthenticated: false });
       } else {
-        // Non-auth error: keep whatever state we already have.
-        // If we have a stored user, stay authenticated.
+        // Network error or 5xx — don't log the user out,
+        // fall back to whatever is cached in localStorage.
+        const stored = loadUser();
         if (stored) {
           setState({ user: stored, isLoading: false, isAuthenticated: true });
         } else {

@@ -9,7 +9,8 @@ import expanceRouter from "./modules/expances/expance.route.js";
 import incomeRouter from "./modules/income/income.routes.js";
 import balanceRouter from "./modules/balance/balance.routes.js";
 import feedbackRouter from "./modules/feedback/feedback.route.js";
-import reportRouter from "./modules/report/report.route.js";
+import reportRouter   from "./modules/report/report.route.js";
+import adminRouter    from "./modules/admin/admin.routes.js";
 
 const app = express();
 
@@ -60,6 +61,12 @@ app.use("/api/feedback",feedbackRouter);
  * @description Report management routes (submit report)
  */
 app.use("/api/report",reportRouter);
+
+/**
+ * @route /api/admin
+ * @description Admin-only routes (stats, users, feedback, reports)
+ */
+app.use("/api/admin", adminRouter);
 
 /**
  * @route GET /

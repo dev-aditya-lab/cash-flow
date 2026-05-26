@@ -327,6 +327,25 @@ export const changePasswordController = async (req: Request, res: Response): Pro
 }
 
 /**
+ * @controller getMeController
+ * @description Return the currently authenticated user's profile
+ * @returns { message: string, data: User }
+ */
+export const getMeController = async (req: Request, res: Response): Promise<void> => {
+	try {
+		const { userId } = (req as Request & { user?: DecodedToken }).user as DecodedToken;
+		const user = await AuthModel.findById(userId).select("-password");
+		if (!user) {
+			sendError(res, 404, "User not found", null);
+			return;
+		}
+		sendRes(res, 200, "User fetched", user);
+	} catch (error) {
+		sendError(res, 500, "Internal server error", error);
+	}
+};
+
+/**
  * @controller logoutUserController
  * @description Logout the authenticated user by clearing the JWT cookie
  * @returns { message: string }
