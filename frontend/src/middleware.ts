@@ -42,5 +42,9 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|public/).*)" ],
+  // Exclude Next.js internals AND all public-folder static assets so they
+  // are never intercepted by the auth redirect (bubblewrap, PWA, TWA, etc.)
+  matcher: [
+    "/((?!_next/static|_next/image|favicon\\.ico|manifest\\.json|sw\\.js|\\.well-known/|.*\\.(?:png|jpg|jpeg|gif|svg|ico|webp|txt|xml)).*)",
+  ],
 };

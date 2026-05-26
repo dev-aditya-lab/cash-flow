@@ -17,7 +17,9 @@
       "Bash(git add *)",
       "Bash(git commit -m 'fix: set application/manifest+json content-type for manifest.json and add SW headers *)",
       "Bash(git push *)",
-      "Bash(git commit -m 'fix: restore display_override in manifest \\(valid spec field, VS Code extension bug\\) *)"
+      "Bash(git commit -m 'fix: restore display_override in manifest \\(valid spec field, VS Code extension bug\\) *)",
+      "WebFetch(domain:cashflow.devaditya.dev)",
+      "Bash(curl -s http://localhost:5000/manifest.json)"
     ]
   }
 }
