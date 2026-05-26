@@ -13,6 +13,7 @@ import { generateEmailVerificationURL } from "../../shared/utils/genreateEmailVe
 import config from "../../config/env.config.js";
 import { saveOtp, verifyOtp } from "../../shared/utils/otpHandlers.js";
 import { LOGIN_ALERT_EMAIL_TEMPLATE } from "../../shared/services/mail/emailTemplate/login-alert.emailTemplate.js";
+import { ACCOUNT_DELETE_REQUEST_EMAIL_TEMPLATE } from "../../shared/services/mail/emailTemplate/account-delete-request.emailTemplate.js";
 
 interface ExtendedRequest extends Request {
 	timestamp: string;
@@ -356,5 +357,77 @@ export const logoutUserController = (_req: Request, res: Response): void => {
 		sendRes(res, 200, "Logout successful", null);
 	} catch (error) {
 		sendError(res, 500, "Internal server error", null);
+	}
+};
+
+/**
+ * @controller requestAccountDeletionController
+ * @description Schedule an account for deletion in 30 days and send a confirmation email.
+ *              This endpoint is PUBLIC so unauthenticated users (e.g. from the Play Store
+ *              delete-account page) can still submit a deletion request.
+ * @route  POST /api/auth/request-account-deletion
+ * @access Public
+ * @body   { email: string }
+ * @returns { success: boolean, message: string }
+ */
+export const requestAccountDeletionController = async (
+	req: Request,
+	res: Response,
+): Promise<void> => {
+	try {
+		const { email } = req.body as { email: string };
+
+		if (!email) {
+			sendError(res, 400, "Email address is required", null);
+			return;
+		}
+
+		const user = await AuthModel.findOne({ email: email.toLowerCase().trim() });
+
+		// Always return success to avoid email enumeration
+		if (!user) {
+			sendRes(res, 200, "If an account with that email exists, a deletion confirmation has been sent.", null);
+			return;
+		}
+
+		if (user.isBanned) {
+			sendRes(res, 200, "If an account with that email exists, a deletion confirmation has been sent.", null);
+			return;
+		}
+
+		// If already pending, resend the email but don't reset the clock
+		const deletionDate = user.deletionRequestedAt
+			? new Date(user.deletionRequestedAt.getTime() + 30 * 24 * 60 * 60 * 1000)
+			: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+		if (!user.pendingDeletion) {
+			user.pendingDeletion = true;
+			user.deletionRequestedAt = new Date();
+			await user.save();
+		}
+
+		const formattedDate = deletionDate.toLocaleDateString("en-US", {
+			year:  "numeric",
+			month: "long",
+			day:   "numeric",
+		});
+
+		// Cancel URL = just the login page; once logged in their data is still there
+		const cancelUrl = `${config.frontendUrl}/login`;
+
+		try {
+			await sendMail(
+				authEmail,
+				user.email,
+				"CashFlow — Account Deletion Scheduled",
+				ACCOUNT_DELETE_REQUEST_EMAIL_TEMPLATE(formattedDate, cancelUrl),
+			);
+		} catch {
+			// Don't fail the request if email sending fails — deletion is already logged
+		}
+
+		sendRes(res, 200, "If an account with that email exists, a deletion confirmation has been sent.", null);
+	} catch (error) {
+		sendError(res, 500, "Internal server error", error);
 	}
 };

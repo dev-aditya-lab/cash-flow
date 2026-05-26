@@ -1,5 +1,15 @@
 import { Router } from "express";
-import {  changePasswordController, getMeController, loginUserController, logoutUserController, registerUserController, reSendVerificationEmailController, verifyEmailController, verifyOtpController } from "./auth.controller.js";
+import {
+	changePasswordController,
+	getMeController,
+	loginUserController,
+	logoutUserController,
+	registerUserController,
+	reSendVerificationEmailController,
+	requestAccountDeletionController,
+	verifyEmailController,
+	verifyOtpController,
+} from "./auth.controller.js";
 import { checkUserMiddleware } from "./auth.middleware.js";
 const authRouter = Router();
 
@@ -72,5 +82,15 @@ authRouter.get("/me", checkUserMiddleware, getMeController);
  * @response { success: boolean, message: string }
  */
 authRouter.post("/logout", logoutUserController);
+
+/**
+ * @route POST api/auth/request-account-deletion
+ * @desc Schedule the account for permanent deletion in 30 days and send a confirmation email.
+ *       Public — required by Google Play Store policy.
+ * @access Public
+ * @body { email: string }
+ * @response { success: boolean, message: string }
+ */
+authRouter.post("/request-account-deletion", requestAccountDeletionController);
 
 export default authRouter;

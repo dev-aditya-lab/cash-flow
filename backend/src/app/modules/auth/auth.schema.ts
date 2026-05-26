@@ -9,6 +9,8 @@ export interface IAuth extends Document {
 	emailVerified: boolean;
 	isBanned: boolean;
 	role: "user" | "admin";
+	pendingDeletion: boolean;
+	deletionRequestedAt: Date | null;
 	createdAt: Date;
 	updatedAt: Date;
 	comparePassword(candidatePassword: string): Promise<boolean>;
@@ -45,6 +47,14 @@ const authSchema = new Schema<IAuth>(
 		isBanned: {
 			type: Boolean,
 			default: false,
+		},
+		pendingDeletion: {
+			type: Boolean,
+			default: false,
+		},
+		deletionRequestedAt: {
+			type: Date,
+			default: null,
 		},
 	},
 	{ timestamps: true },

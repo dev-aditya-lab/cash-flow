@@ -14,6 +14,7 @@ import Link from "next/link";
 
 import { Button }  from "@/components/ui/button";
 import { Input }   from "@/components/ui/input";
+import api         from "@/services/api";
 
 // ── schema ────────────────────────────────────────────────────────────────────
 const schema = z.object({
@@ -53,18 +54,7 @@ export default function DeleteAccountPage() {
 
   const onSubmit = async (values: FormValues) => {
     try {
-      // Send deletion request to backend
-      const res = await fetch("/api/auth/request-account-deletion", {
-        method:  "POST",
-        headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({ email: values.email }),
-      });
-
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body?.message ?? "Request failed. Please try again.");
-      }
-
+      await api.post("/auth/request-account-deletion", { email: values.email });
       setSubmittedEmail(values.email);
       setSubmitted(true);
     } catch (err: unknown) {
