@@ -33,9 +33,9 @@ public class LauncherActivity
     protected void onCreate(Bundle savedInstanceState) {
         // Enable edge-to-edge display.
         // WindowCompat.setDecorFitsSystemWindows(false) is the AppCompatActivity-compatible
-        // equivalent of EdgeToEdge.enable() — it replaces the deprecated
+        // equivalent of EdgeToEdge.enable(). It replaces the deprecated
         // Window.setStatusBarColor / setNavigationBarColor / getStatusBarColor APIs
-        // flagged by Google Play for SDK 35+ compliance.
+        // flagged by Google Play for SDK 35+ / Android 16 compliance.
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
 
         super.onCreate(savedInstanceState);
@@ -68,48 +68,3 @@ public class LauncherActivity
         return uri;
     }
 }
-
-
-public class LauncherActivity
-        extends com.google.androidbrowserhelper.trusted.LauncherActivity {
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        // Enable edge-to-edge display — replaces the deprecated
-        // Window.setStatusBarColor / setNavigationBarColor APIs.
-        // EdgeToEdge.enable() is backward-compatible down to API 21.
-        EdgeToEdge.enable(this);
-
-        super.onCreate(savedInstanceState);
-
-        // Apply window insets so system bars never overlap the TWA content.
-        View rootView = getWindow().getDecorView().getRootView();
-        ViewCompat.setOnApplyWindowInsetsListener(rootView, (v, insets) -> {
-            Insets bars = insets.getInsets(
-                    WindowInsetsCompat.Type.systemBars() |
-                    WindowInsetsCompat.Type.displayCutout()
-            );
-            v.setPadding(bars.left, bars.top, bars.right, bars.bottom);
-            return WindowInsetsCompat.CONSUMED;
-        });
-
-        // Setting an orientation crashes the app due to the transparent background on Android 8.0
-        // Oreo and below. We only set the orientation on Oreo and above. This only affects the
-        // splash screen and Chrome will still respect the orientation.
-        // See https://github.com/GoogleChromeLabs/bubblewrap/issues/496 for details.
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O) {
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
-        } else {
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
-        }
-    }
-
-    @Override
-    protected Uri getLaunchingUrl() {
-        // Get the original launch Url.
-        Uri uri = super.getLaunchingUrl();
-
-        return uri;
-    }
-}
-

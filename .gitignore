@@ -62,3 +62,6 @@ android.keystore
 *.jks
 /android
 /.bubblewrap
+deployment_cert.der
+keystore.properties
+/mobile/app/keystore.properties

@@ -53,6 +53,22 @@ def twaManifest = [
 android {
     compileSdkVersion 36
     namespace "cashflow.devaditya.dev"
+
+    // Load signing credentials from keystore.properties (local, never committed)
+    def keystorePropsFile = rootProject.file("app/keystore.properties")
+    def keystoreProps = new Properties()
+    if (keystorePropsFile.exists()) {
+        keystoreProps.load(new FileInputStream(keystorePropsFile))
+    }
+
+    signingConfigs {
+        release {
+            storeFile     file(keystoreProps['storeFile'] ?: 'android.keystore')
+            storePassword keystoreProps['storePassword'] ?: ''
+            keyAlias      keystoreProps['keyAlias']      ?: 'cashflow'
+            keyPassword   keystoreProps['keyPassword']   ?: ''
+        }
+    }
     defaultConfig {
         applicationId "cashflow.devaditya.dev"
         minSdkVersion 21
@@ -153,6 +169,7 @@ android {
     buildTypes {
         release {
             minifyEnabled true
+            signingConfig signingConfigs.release
         }
     }
     compileOptions {
@@ -211,9 +228,8 @@ dependencies {
     
         implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.6.2'
     
-    // EdgeToEdge.enable() and WindowInsetsCompat — replaces deprecated
+    // WindowCompat + WindowInsetsCompat — replaces deprecated
     // Window.setStatusBarColor / setNavigationBarColor APIs (API 36 requirement)
-    implementation 'androidx.activity:activity:1.9.3'
     implementation 'androidx.core:core:1.13.1'
 }
 
