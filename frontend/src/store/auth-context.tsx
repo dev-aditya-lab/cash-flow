@@ -41,9 +41,11 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<AuthState>({
-    user: null,
+    // Seed from localStorage immediately so the UI never flashes "logged out"
+    // while refreshUser() is in-flight on mount (e.g. TWA cold-open).
+    user: loadUser(),
     isLoading: true,
-    isAuthenticated: false,
+    isAuthenticated: !!loadUser(),
   });
 
   /**

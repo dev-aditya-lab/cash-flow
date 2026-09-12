@@ -28,7 +28,10 @@ api.interceptors.response.use(
       error.message = backendMsg;
     }
 
-    // 401 outside auth pages → force back to login
+    // 401 outside auth pages → force back to login only if no session is cached.
+    // auth-context.tsx handles 401 from /auth/me gracefully (falls back to localStorage).
+    // This interceptor guards all OTHER protected routes, but must not boot the user
+    // on a transient 401 caused by a missing cookie during a TWA cold-open.
     if (status === 401) {
       if (typeof window !== "undefined") {
         const current = window.location.pathname;
@@ -39,9 +42,12 @@ api.interceptors.response.use(
           current.startsWith("/forgot-password");
 
         if (!isAuthPage) {
-          // Clear the routing marker and hard-redirect
-          document.cookie = "cf_logged_in=; path=/; max-age=0; SameSite=Strict";
-          window.location.href = "/login";
+          // Only force-logout if there is genuinely no local session to recover.
+          const hasLocalUser = !!localStorage.getItem("cf_user");
+          if (!hasLocalUser) {
+            document.cookie = "cf_logged_in=; path=/; max-age=0; SameSite=Lax";
+            window.location.href = "/login";
+          }
         }
       }
     }

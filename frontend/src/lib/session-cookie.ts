@@ -12,10 +12,10 @@ const MAX_AGE = 7 * 24 * 60 * 60; // 7 days (matches backend JWT expiry)
 
 export function setSessionMarker() {
   if (typeof document === "undefined") return;
-  document.cookie = `${NAME}=1; path=/; max-age=${MAX_AGE}; SameSite=Strict`;
+  document.cookie = `${NAME}=1; path=/; max-age=${MAX_AGE}; SameSite=Lax`; // Lax allows TWA/PWA cold-opens from the Android launcher
 }
 
 export function clearSessionMarker() {
   if (typeof document === "undefined") return;
-  document.cookie = `${NAME}=; path=/; max-age=0; SameSite=Strict`;
+  document.cookie = `${NAME}=; path=/; max-age=0; SameSite=Lax`;
 }
