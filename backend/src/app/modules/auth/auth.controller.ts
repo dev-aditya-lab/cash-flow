@@ -48,6 +48,7 @@ export const registerUserController: RequestHandler = async (
 			const otp = generateOtp(6);
 			const verificationLink = generateEmailVerificationURL(req, email);
 			await saveOtp(email, otp);
+
 			try {
 				await sendMail(
 					authEmail,
@@ -62,19 +63,10 @@ export const registerUserController: RequestHandler = async (
 						verificationLink,
 					),
 				);
-				sendRes(
-					res,
-					201,
-					"Otp sent successfully on " + createdUser.email,
-					null,
-				);
-			} catch (error) {
-				if (error instanceof Error) {
-					sendError(res, 400, error.message, null);
-				} else {
-					sendError(res, 400, "Failed to send OTP email", null);
-				}
+			} catch (mailErr) {
+				console.error("Failed to send registration OTP email:", mailErr);
 			}
+
 			const { password: _, ...userWithoutPassword } =
 				createdUser.toObject();
 			sendRes(
@@ -116,7 +108,6 @@ export const verifyEmailController = async (
 		user.emailVerified = true;
 		await user.save();
 		res.redirect(config.frontendUrl + "/login");
-		sendRes(res, 200, "Email verified successfully", {userEmail: user.email});
 	} catch (error) {
 		sendError(res, 400, "Invalid token", null);
 	}
@@ -157,34 +148,20 @@ export const reSendVerificationEmailController: RequestHandler = async (
 			const otp = generateOtp(6);
 			const verificationLink = generateEmailVerificationURL(req, email);
 			await saveOtp(email, otp);
-			try {
-				await sendMail(
-					authEmail,
-					isUserExist.email,
-					"Welcome back to CashFlow! Your OTP Code",
-					OTP_EMAIL_TEMPLATE(
-						otp,
-						extendedReq.timestamp,
-						extendedReq.ip ?? "",
-						extendedReq.deviceInfo,
-						extendedReq.location,
-						verificationLink,
-					),
-				);
-			} catch (error) {
-				if (error instanceof Error) {
-					sendError(res, 400, error.message, null);
-				} else {
-					sendError(
-						res,
-						400,
-						"Failed to send verification email",
-						null,
-					);
-				}
-			}
-
-			sendRes(res, 201, "Verification email sent successfully", null);
+			await sendMail(
+				authEmail,
+				isUserExist.email,
+				"Welcome back to CashFlow! Your OTP Code",
+				OTP_EMAIL_TEMPLATE(
+					otp,
+					extendedReq.timestamp,
+					extendedReq.ip ?? "",
+					extendedReq.deviceInfo,
+					extendedReq.location,
+					verificationLink,
+				),
+			);
+			sendRes(res, 200, "Verification email sent successfully", null);
 		} catch (error) {
 			if (error instanceof Error) {
 				sendError(res, 400, error.message, null);
