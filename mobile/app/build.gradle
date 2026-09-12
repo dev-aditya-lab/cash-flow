@@ -56,9 +56,9 @@ android {
     defaultConfig {
         applicationId "cashflow.devaditya.dev"
         minSdkVersion 21
-        targetSdkVersion 35
-        versionCode 1
-        versionName "1"
+        targetSdkVersion 36   // API 36 = Android 16 (required by Play Store from Aug 31 2026)
+        versionCode 2
+        versionName "1.0.1"
 
         // The name for the application
         resValue "string", "appName", twaManifest.name
@@ -156,8 +156,9 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        // Java 11+ required for EdgeToEdge / WindowInsetsCompat APIs
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
     }
     lintOptions {
         checkReleaseBuilds false
@@ -210,4 +211,9 @@ dependencies {
     
         implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.6.2'
     
+    // EdgeToEdge.enable() and WindowInsetsCompat — replaces deprecated
+    // Window.setStatusBarColor / setNavigationBarColor APIs (API 36 requirement)
+    implementation 'androidx.activity:activity:1.9.3'
+    implementation 'androidx.core:core:1.13.1'
 }
+
