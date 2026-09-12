@@ -440,17 +440,13 @@ export default function DashboardPage() {
               <p className="text-xs">Tap the + button to add your first entry</p>
             </div>
           ) : (
-            <motion.div
-              variants={staggerContainer}
-              initial="initial"
-              animate="enter"
-            >
+            <div>
               {data.recentTransactions.map((tx) => (
-                <div key={tx.id} className="group">
+                <div key={tx.id}>
                   <TransactionCard {...tx} compact />
                 </div>
               ))}
-            </motion.div>
+            </div>
           )}
         </div>
       </motion.div>

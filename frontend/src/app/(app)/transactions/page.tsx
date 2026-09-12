@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import {
   Search, ArrowUpDown, Trash2, Pencil, X,
-  TrendingDown, TrendingUp, Plus, Tag,
+  TrendingDown, TrendingUp, Plus, Tag, ChevronDown,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -21,7 +20,6 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { formatCurrency }          from "@/lib/utils";
-import { staggerContainer, staggerItem } from "@/lib/animations";
 import type { TransactionType, Expense, Income } from "@/types";
 
 type TabType  = "all" | "income" | "expense";
@@ -222,13 +220,13 @@ export default function TransactionsPage() {
           ) : tab === "expense" ? (
             <>
               <StatCard
-                title="Total Expenses"
+                title="Total"
                 value={formatCurrency(data.totalExpense)}
                 icon={<TrendingDown className="h-5 w-5" />}
                 accentClass="bg-danger-bg text-danger"
               />
               <StatCard
-                title="Top Category"
+                title="Top Cat."
                 value={topCategory}
                 icon={<Tag className="h-5 w-5" />}
                 accentClass="bg-warning-bg text-warning-foreground"
@@ -255,7 +253,7 @@ export default function TransactionsPage() {
                 accentClass="bg-danger-bg text-danger"
               />
               <StatCard
-                title="Net Balance"
+                title="Net"
                 value={formatCurrency(data.balance)}
                 icon={<ArrowUpDown className="h-5 w-5" />}
                 accentClass={data.balance >= 0 ? "bg-success-bg text-success" : "bg-danger-bg text-danger"}
@@ -275,10 +273,9 @@ export default function TransactionsPage() {
           onChange={(e) => { setSearch(e.target.value); setPage(1); }}
         />
 
-        {/* Tab + dropdowns row */}
-        <div className="flex flex-wrap gap-2 items-center">
-          {/* Type tabs */}
-          <div className="flex rounded-[var(--radius)] border border-border overflow-hidden text-sm">
+        {/* Type tabs row */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-0.5 scrollbar-none">
+          <div className="flex rounded-[var(--radius)] border border-border overflow-hidden text-sm shrink-0">
             {(["all", "income", "expense"] as TabType[]).map((t) => (
               <button
                 key={t}
@@ -296,7 +293,7 @@ export default function TransactionsPage() {
 
           {/* Mode */}
           <Select value={mode} onValueChange={(v) => { setMode(v); setPage(1); }}>
-            <SelectTrigger className="w-[130px] h-9">
+            <SelectTrigger className="w-[110px] h-9 shrink-0">
               <SelectValue placeholder="Mode" />
             </SelectTrigger>
             <SelectContent>
@@ -311,21 +308,21 @@ export default function TransactionsPage() {
 
           {/* Sort */}
           <Select value={sort} onValueChange={(v) => setSort(v as SortType)}>
-            <SelectTrigger className="w-[150px] h-9">
+            <SelectTrigger className="w-[120px] h-9 shrink-0">
               <SelectValue placeholder="Sort" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="date-desc">Newest first</SelectItem>
-              <SelectItem value="date-asc">Oldest first</SelectItem>
-              <SelectItem value="amount-desc">Highest amount</SelectItem>
-              <SelectItem value="amount-asc">Lowest amount</SelectItem>
+              <SelectItem value="date-desc">Newest</SelectItem>
+              <SelectItem value="date-asc">Oldest</SelectItem>
+              <SelectItem value="amount-desc">Highest ₹</SelectItem>
+              <SelectItem value="amount-asc">Lowest ₹</SelectItem>
             </SelectContent>
           </Select>
 
           {hasActiveFilters && (
             <Button
               variant="ghost" size="sm"
-              className="gap-1.5 text-muted-foreground"
+              className="gap-1.5 text-muted-foreground shrink-0"
               onClick={clearFilters}
             >
               <X className="h-3.5 w-3.5" /> Clear
@@ -334,31 +331,23 @@ export default function TransactionsPage() {
         </div>
 
         {/* Category pills — only when viewing expenses */}
-        <AnimatePresence>
-          {tab === "expense" && expenseCategories.length > 1 && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.2 }}
-              className="flex flex-wrap gap-2 overflow-hidden"
-            >
-              {expenseCategories.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => { setActiveCategory(cat); setPage(1); }}
-                  className={`px-3 py-1 rounded-full text-xs font-medium capitalize transition-colors ${
-                    activeCategory === cat
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-secondary text-secondary-foreground hover:bg-accent"
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {tab === "expense" && expenseCategories.length > 1 && (
+          <div className="flex gap-2 overflow-x-auto pb-0.5 scrollbar-none">
+            {expenseCategories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => { setActiveCategory(cat); setPage(1); }}
+                className={`px-3 py-1 rounded-full text-xs font-medium capitalize whitespace-nowrap transition-colors ${
+                  activeCategory === cat
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-secondary text-secondary-foreground hover:bg-accent"
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* ── Transaction list ─────────────────────────────────── */}
@@ -385,12 +374,11 @@ export default function TransactionsPage() {
             )}
           </div>
         ) : (
-          <motion.div variants={staggerContainer} initial="initial" animate="enter">
+          <div>
             {paginated.map((tx) => (
-              <motion.div
+              <div
                 key={tx.id}
-                variants={staggerItem}
-                className="px-4 group hover:bg-accent/30 transition-colors"
+                className="px-4 border-b border-border last:border-b-0"
               >
                 <TransactionCard
                   id={tx.id}
@@ -403,9 +391,9 @@ export default function TransactionsPage() {
                   onEdit={() => handleEdit(tx)}
                   onDelete={() => handleDelete(tx)}
                 />
-              </motion.div>
+              </div>
             ))}
-          </motion.div>
+          </div>
         )}
       </div>
 

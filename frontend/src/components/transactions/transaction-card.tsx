@@ -1,11 +1,9 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { Pencil, Trash2, ArrowDownLeft, ArrowUpRight } from "lucide-react";
 import { cn, formatCurrency, formatDate, PAYMENT_MODE_LABELS } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { staggerItem } from "@/lib/animations";
 import type { TransactionType } from "@/types";
 
 interface TransactionCardProps {
@@ -28,14 +26,13 @@ export function TransactionCard({
   const isIncome = type === "income";
 
   return (
-    <motion.div
-      variants={staggerItem}
+    <div
       className={cn(
         "flex items-center gap-3 py-3",
         !compact && "px-1"
       )}
     >
-      {/* Icon */}
+      {/* Type icon */}
       <div
         className={cn(
           "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl",
@@ -60,14 +57,14 @@ export function TransactionCard({
           {category && (
             <>
               <span className="text-muted-foreground/50 text-xs">·</span>
-              <span className="text-xs text-muted-foreground truncate max-w-[100px]">{category}</span>
+              <span className="text-xs text-muted-foreground truncate max-w-[80px]">{category}</span>
             </>
           )}
         </div>
       </div>
 
-      {/* Amount + actions */}
-      <div className="flex items-center gap-1.5 shrink-0">
+      {/* Amount + action buttons — always visible on mobile */}
+      <div className="flex items-center gap-1 shrink-0">
         <span
           className={cn(
             "text-sm font-semibold tabular-nums",
@@ -77,20 +74,28 @@ export function TransactionCard({
           {isIncome ? "+" : "-"}{formatCurrency(amount)}
         </span>
         {(onEdit || onDelete) && (
-          <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="flex items-center">
             {onEdit && (
-              <Button variant="ghost" size="icon-sm" onClick={onEdit} className="h-7 w-7">
-                <Pencil className="h-3 w-3" />
-              </Button>
+              <button
+                onClick={onEdit}
+                aria-label="Edit"
+                className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent active:bg-accent transition-colors"
+              >
+                <Pencil className="h-3.5 w-3.5" />
+              </button>
             )}
             {onDelete && (
-              <Button variant="ghost" size="icon-sm" onClick={onDelete} className="h-7 w-7 text-danger hover:text-danger hover:bg-danger-bg">
-                <Trash2 className="h-3 w-3" />
-              </Button>
+              <button
+                onClick={onDelete}
+                aria-label="Delete"
+                className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground hover:text-danger hover:bg-danger-bg active:bg-danger-bg transition-colors"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
             )}
           </div>
         )}
       </div>
-    </motion.div>
+    </div>
   );
 }
